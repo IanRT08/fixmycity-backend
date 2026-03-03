@@ -18,7 +18,7 @@ public class Cuadrilla {
     private Municipios idMunicipio;
 
     @OneToOne
-    @JoinColumn(name = "voluntario", nullable = false)
+    @JoinColumn(name = "idLider", nullable = false)
     private Voluntario voluntario;
 
     @Column(name = "estado", nullable = false, length = 10)
