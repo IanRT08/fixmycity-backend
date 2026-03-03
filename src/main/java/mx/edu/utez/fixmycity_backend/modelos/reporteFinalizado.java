@@ -13,14 +13,15 @@ public class reporteFinalizado {
     @JoinColumn(name = "idReporte", nullable = false)
     private Reporte idReporte;
 
-    @Column(name = "fotoEvidencia", nullable = false)
-    private String fotoEvidencia;
+    @Lob
+    @Column(name = "fotoEvidencia")
+    private byte[] fotoEvidencia;
 
     @Column(name = "comentarios", nullable = false, length = 255)
     private String comentarios;
 
     @ManyToOne
-    @JoinColumn(name = "idCuadrilla")
+    @JoinColumn(name = "idCuadrillaEncargada")
     private Cuadrilla idCuadrillaEncargada;
 
     @Column(name = "fechaFinalizacion", nullable = false)
@@ -34,11 +35,11 @@ public class reporteFinalizado {
         this.idReporte = idReporte;
     }
 
-    public String getFotoEvidencia() {
+    public byte[] getFotoEvidencia() {
         return fotoEvidencia;
     }
 
-    public void setFotoEvidencia(String fotoEvidencia) {
+    public void setFotoEvidencia(byte[] fotoEvidencia) {
         this.fotoEvidencia = fotoEvidencia;
     }
 

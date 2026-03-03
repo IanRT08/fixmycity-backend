@@ -12,7 +12,7 @@ public class informacionVoluntario {
 
     @OneToOne
     @JoinColumn(name = "idSolicitud", nullable = false)
-    private solicitudVoluntario idSolicitud;
+    private solicitudVoluntario solicitudVoluntario;
 
     @Column(name = "nombre", nullable = false,  length = 100)
     private String nombre;
@@ -35,12 +35,12 @@ public class informacionVoluntario {
         this.idInfo = idInfo;
     }
 
-    public solicitudVoluntario getIdSolicitud() {
-        return idSolicitud;
+    public solicitudVoluntario getSolicitudVoluntario() {
+        return solicitudVoluntario;
     }
 
-    public void setIdSolicitud(solicitudVoluntario idSolicitud) {
-        this.idSolicitud = idSolicitud;
+    public void setSolicitudVoluntario(solicitudVoluntario solicitudVoluntario) {
+        this.solicitudVoluntario = solicitudVoluntario;
     }
 
     public String getNombre() {

@@ -18,8 +18,8 @@ public class Cuadrilla {
     private Municipios idMunicipio;
 
     @OneToOne
-    @JoinColumn(name = "idVoluntario", nullable = false)
-    private Voluntario idLider;
+    @JoinColumn(name = "voluntario", nullable = false)
+    private Voluntario voluntario;
 
     @Column(name = "estado", nullable = false, length = 10)
     private String estado;
@@ -48,12 +48,12 @@ public class Cuadrilla {
         this.idMunicipio = idMunicipio;
     }
 
-    public Voluntario getIdLider() {
-        return idLider;
+    public Voluntario getVoluntario() {
+        return voluntario;
     }
 
-    public void setIdLider(Voluntario idLider) {
-        this.idLider = idLider;
+    public void setVoluntario(Voluntario voluntario) {
+        this.voluntario = voluntario;
     }
 
     public String getEstado() {

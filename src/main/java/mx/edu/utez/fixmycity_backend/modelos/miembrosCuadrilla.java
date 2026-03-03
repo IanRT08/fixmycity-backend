@@ -12,11 +12,11 @@ public class miembrosCuadrilla {
 
     @ManyToOne
     @JoinColumn(name = "idCuadrilla", nullable = false)
-    private Cuadrilla idCuadrilla;
+    private Cuadrilla cuadrilla;
 
     @ManyToOne
-    @JoinColumn(name = "idUsuario", nullable = false)
-    private Usuario idUsuario;
+    @JoinColumn(name = "idVoluntario", nullable = false)
+    private Usuario usuario;
 
     @Column(name = "tipo", nullable = false, length = 10)
     private String tipo;
@@ -29,20 +29,20 @@ public class miembrosCuadrilla {
         this.numeroVoluntario = numeroVoluntario;
     }
 
-    public Cuadrilla getIdCuadrilla() {
-        return idCuadrilla;
+    public Cuadrilla getCuadrilla() {
+        return cuadrilla;
     }
 
-    public void setIdCuadrilla(Cuadrilla idCuadrilla) {
-        this.idCuadrilla = idCuadrilla;
+    public void setCuadrilla(Cuadrilla cuadrilla) {
+        this.cuadrilla = cuadrilla;
     }
 
-    public Usuario getIdUsuario() {
-        return idUsuario;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setIdUsuario(Usuario idUsuario) {
-        this.idUsuario = idUsuario;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public String getTipo() {

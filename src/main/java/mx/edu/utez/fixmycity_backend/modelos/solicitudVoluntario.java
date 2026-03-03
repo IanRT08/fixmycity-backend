@@ -12,7 +12,7 @@ public class solicitudVoluntario {
 
     @ManyToOne
     @JoinColumn(name = "idUsuario", nullable = false)
-    private Usuario idUsuario;
+    private Usuario usuario;
 
     @Column(name = "estado", nullable = false)
     private String estado;
@@ -25,12 +25,12 @@ public class solicitudVoluntario {
         this.idSolicitud = idSolicitud;
     }
 
-    public Usuario getIdUsuario() {
-        return idUsuario;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setIdUsuario(Usuario idUsuario) {
-        this.idUsuario = idUsuario;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public String getEstado() {

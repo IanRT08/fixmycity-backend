@@ -11,14 +11,14 @@ public class detallesReporte {
     @Id
     @OneToOne
     @JoinColumn(name = "idReporte", nullable = false)
-    private Reporte idReporte;
+    private Reporte reporte;
 
-    @Column(name = "descripcion", nullable = false, length = 255)
+    @Column(name = "descripcion", length = 255)
     private String descripcion;
 
     @ManyToOne
-    @JoinColumn(name = "idMunicipio", nullable = false)
-    private Municipios idMunicipio;
+    @JoinColumn(name = "municipios", nullable = false)
+    private Municipios municipios;
 
     @Column(name = "estado", nullable = false, length = 15)
     private String estado;
@@ -26,12 +26,12 @@ public class detallesReporte {
     @Column(name = "fechaRegistro", nullable = false)
     private Date fechaRegistro;
 
-    public Reporte getIdReporte() {
-        return idReporte;
+    public Reporte getReporte() {
+        return reporte;
     }
 
-    public void setIdReporte(Reporte idReporte) {
-        this.idReporte = idReporte;
+    public void setReporte(Reporte reporte) {
+        this.reporte = reporte;
     }
 
     public String getDescripcion() {
@@ -42,12 +42,12 @@ public class detallesReporte {
         this.descripcion = descripcion;
     }
 
-    public Municipios getIdMunicipio() {
-        return idMunicipio;
+    public Municipios getMunicipios() {
+        return municipios;
     }
 
-    public void setIdMunicipio(Municipios idMunicipio) {
-        this.idMunicipio = idMunicipio;
+    public void setMunicipios(Municipios municipios) {
+        this.municipios = municipios;
     }
 
     public String getEstado() {

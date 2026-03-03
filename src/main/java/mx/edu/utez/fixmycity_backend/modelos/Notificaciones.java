@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table
+@Table(name = "notificaciones")
 public class Notificaciones {
 
     @Id
@@ -24,7 +24,7 @@ public class Notificaciones {
     private String mensaje;
 
     @Column(name = "leida", nullable = false, length = 1)
-    private int leida;
+    private boolean leida;
 
     @Column(name = "fechaEnvio", nullable = false)
     private Timestamp fechaEnvio;
@@ -61,11 +61,11 @@ public class Notificaciones {
         this.mensaje = mensaje;
     }
 
-    public int getLeida() {
+    public boolean isLeida() {
         return leida;
     }
 
-    public void setLeida(int leida) {
+    public void setLeida(boolean leida) {
         this.leida = leida;
     }
 

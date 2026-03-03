@@ -11,11 +11,12 @@ public class fotosReporte {
     private int idFoto;
 
     @ManyToOne
-    @JoinColumn(name = "idReporte", nullable = false)
-    private Reporte idReporte;
+    @JoinColumn(name = "reporte", nullable = false)
+    private Reporte reporte;
 
+    @Lob
     @Column(name = "foto")
-    private String foto;
+    private byte[] foto;
 
     public int getIdFoto() {
         return idFoto;
@@ -25,19 +26,19 @@ public class fotosReporte {
         this.idFoto = idFoto;
     }
 
-    public Reporte getIdReporte() {
-        return idReporte;
+    public Reporte getReporte() {
+        return reporte;
     }
 
-    public void setIdReporte(Reporte idReporte) {
-        this.idReporte = idReporte;
+    public void setReporte(Reporte reporte) {
+        this.reporte = reporte;
     }
 
-    public String getFoto() {
+    public byte[] getFoto() {
         return foto;
     }
 
-    public void setFoto(String foto) {
+    public void setFoto(byte[] foto) {
         this.foto = foto;
     }
 }

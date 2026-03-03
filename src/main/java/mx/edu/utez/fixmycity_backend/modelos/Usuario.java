@@ -26,7 +26,7 @@ public class Usuario {
 
     @ManyToOne
     @JoinColumn(name = "idMunicipio", nullable = false)
-    private Municipios idMunicipio;
+    private Municipios municipio;
 
     @Column(name = "tipo", nullable = false, length = 15)
     private String tipo;
@@ -74,12 +74,12 @@ public class Usuario {
         this.fechaNacimiento = fechaNacimiento;
     }
 
-    public Municipios getIdMunicipio() {
-        return idMunicipio;
+    public Municipios getMunicipio() {
+        return municipio;
     }
 
-    public void setIdMunicipio(Municipios idMunicipio) {
-        this.idMunicipio = idMunicipio;
+    public void setMunicipio(Municipios municipio) {
+        this.municipio = municipio;
     }
 
     public String getTipo() {

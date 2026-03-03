@@ -11,8 +11,8 @@ public class Reporte {
     private int idReporte;
 
     @ManyToOne
-    @JoinColumn(name = "idUsuario", nullable = false)
-    private Usuario idUsuario;
+    @JoinColumn(name = "usuario", nullable = false)
+    private Usuario usuario;
 
     @Column(name = "titulo", nullable = false, length = 60)
     private String titulo;
@@ -25,12 +25,12 @@ public class Reporte {
         this.idReporte = idReporte;
     }
 
-    public Usuario getIdUsuario() {
-        return idUsuario;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setIdUsuario(Usuario idUsuario) {
-        this.idUsuario = idUsuario;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public String getTitulo() {

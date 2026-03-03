@@ -3,7 +3,7 @@ package mx.edu.utez.fixmycity_backend.modelos;
 import jakarta.persistence.*;
 
 @Entity
-@Table
+@Table(name = "cancelacionReporte")
 public class cancelacionReporte {
 
     @Id
@@ -12,11 +12,11 @@ public class cancelacionReporte {
 
     @OneToOne
     @JoinColumn(name = "idReporte", nullable = false)
-    private Reporte idReporte;
+    private Reporte reporte;
 
     @ManyToOne
     @JoinColumn(name = "idUsuario", nullable = false)
-    private Usuario idUsuario;
+    private Usuario usuario;
 
     @Column(name = "motivoCancelacion", nullable = false, length = 255)
     private String motivoCancelacion;
@@ -29,20 +29,20 @@ public class cancelacionReporte {
         this.idCancelacion = idCancelacion;
     }
 
-    public Reporte getIdReporte() {
-        return idReporte;
+    public Reporte getReporte() {
+        return reporte;
     }
 
-    public void setIdReporte(Reporte idReporte) {
-        this.idReporte = idReporte;
+    public void setReporte(Reporte reporte) {
+        this.reporte = reporte;
     }
 
-    public Usuario getIdUsuario() {
-        return idUsuario;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setIdUsuario(Usuario idUsuario) {
-        this.idUsuario = idUsuario;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public String getMotivoCancelacion() {

@@ -2,7 +2,7 @@ package mx.edu.utez.fixmycity_backend.modelos;
 
 import jakarta.persistence.*;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 
 @Entity
@@ -19,7 +19,7 @@ public class reporteAsignadoCuadrilla {
     private Cuadrilla idCuadrilla;
 
     @Column(name = "fechaAsignacion", nullable = false)
-    private Timestamp fechaAsignacion;
+    private Date fechaAsignacion;
 
     public Reporte getIdReporte() {
         return idReporte;
@@ -37,11 +37,11 @@ public class reporteAsignadoCuadrilla {
         this.idCuadrilla = idCuadrilla;
     }
 
-    public Timestamp getFechaAsignacion() {
+    public Date getFechaAsignacion() {
         return fechaAsignacion;
     }
 
-    public void setFechaAsignacion(Timestamp fechaAsignacion) {
+    public void setFechaAsignacion(Date fechaAsignacion) {
         this.fechaAsignacion = fechaAsignacion;
     }
 }

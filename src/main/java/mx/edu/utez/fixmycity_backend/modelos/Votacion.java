@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.sql.Timestamp;
 
+@Entity
+@Table(name = "votacion")
 public class Votacion {
 
     @Id

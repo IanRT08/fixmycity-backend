@@ -9,16 +9,16 @@ import java.sql.Timestamp;
 public class historialReporte {
 
     @Id
-    @Column(name = "idCambioEstado", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idCambioEstado;
 
     @ManyToOne
     @JoinColumn(name = "idReporte", nullable = false)
-    private Reporte idReporte;
+    private Reporte reporte;
 
     @ManyToOne
-    @JoinColumn(name = "idUsuario")
-    private Usuario idResponsable;
+    @JoinColumn(name = "idResponsable")
+    private Usuario usuario;
 
     @Column(name = "fechaCambio", nullable = false)
     private Timestamp fechaCambio;
@@ -29,20 +29,28 @@ public class historialReporte {
     @Column(name = "estadoNuevo", nullable = false, length = 15)
     private String estadoNuevo;
 
-    public String getEstadoNuevo() {
-        return estadoNuevo;
+    public int getIdCambioEstado() {
+        return idCambioEstado;
     }
 
-    public void setEstadoNuevo(String estadoNuevo) {
-        this.estadoNuevo = estadoNuevo;
+    public void setIdCambioEstado(int idCambioEstado) {
+        this.idCambioEstado = idCambioEstado;
     }
 
-    public String getEstadoAnterior() {
-        return estadoAnterior;
+    public Reporte getReporte() {
+        return reporte;
     }
 
-    public void setEstadoAnterior(String estadoAnterior) {
-        this.estadoAnterior = estadoAnterior;
+    public void setReporte(Reporte reporte) {
+        this.reporte = reporte;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public Timestamp getFechaCambio() {
@@ -53,27 +61,19 @@ public class historialReporte {
         this.fechaCambio = fechaCambio;
     }
 
-    public Usuario getIdResponsable() {
-        return idResponsable;
+    public String getEstadoAnterior() {
+        return estadoAnterior;
     }
 
-    public void setIdResponsable(Usuario idResponsable) {
-        this.idResponsable = idResponsable;
+    public void setEstadoAnterior(String estadoAnterior) {
+        this.estadoAnterior = estadoAnterior;
     }
 
-    public Reporte getIdReporte() {
-        return idReporte;
+    public String getEstadoNuevo() {
+        return estadoNuevo;
     }
 
-    public void setIdReporte(Reporte idReporte) {
-        this.idReporte = idReporte;
-    }
-
-    public int getIdCambioEstado() {
-        return idCambioEstado;
-    }
-
-    public void setIdCambioEstado(int idCambioEstado) {
-        this.idCambioEstado = idCambioEstado;
+    public void setEstadoNuevo(String estadoNuevo) {
+        this.estadoNuevo = estadoNuevo;
     }
 }
