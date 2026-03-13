@@ -1,6 +1,5 @@
 package mx.edu.utez.fixmycity_backend.dto.response;
 
-// Módulo 1.3 - Datos de una solicitud de voluntario que el admin revisa
 public class SolicitudVoluntarioResponse {
 
     private int idSolicitud;
@@ -8,19 +7,17 @@ public class SolicitudVoluntarioResponse {
     private String nombre;
     private String curp;
     private String telefono;
-    private String municipio;
     private String descripcion;
     private String estado;
 
     public SolicitudVoluntarioResponse(int idSolicitud, String nombreUsuario, String nombre,
-                                       String curp, String telefono, String municipio,
+                                       String curp, String telefono,
                                        String descripcion, String estado) {
         this.idSolicitud = idSolicitud;
         this.nombreUsuario = nombreUsuario;
         this.nombre = nombre;
         this.curp = curp;
         this.telefono = telefono;
-        this.municipio = municipio;
         this.descripcion = descripcion;
         this.estado = estado;
     }
@@ -58,13 +55,6 @@ public class SolicitudVoluntarioResponse {
     }
     public void setTelefono(String telefono) {
         this.telefono = telefono;
-    }
-
-    public String getMunicipio() {
-        return municipio;
-    }
-    public void setMunicipio(String municipio) {
-        this.municipio = municipio;
     }
 
     public String getDescripcion() {

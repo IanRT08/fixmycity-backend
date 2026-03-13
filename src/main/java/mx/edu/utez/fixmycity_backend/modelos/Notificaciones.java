@@ -17,7 +17,7 @@ public class Notificaciones {
     private Usuario idUsuario;
 
     @ManyToOne
-    @JoinColumn(name = "idReporte", nullable = false)
+    @JoinColumn(name = "idReporte")
     private Reporte idReporte;
 
     @Column(name = "mensaje", nullable = false, length = 255)
