@@ -4,7 +4,6 @@ import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.modelos.Usuario;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
 import mx.edu.utez.fixmycity_backend.services.NotificacionesService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,11 +15,13 @@ import java.util.Optional;
 @RequestMapping("/api/notifications")
 public class NotificacionController {
 
-    @Autowired
-    private NotificacionesService notificacionService;
+    private final NotificacionesService notificacionService;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    public NotificacionController(NotificacionesService notificacionService, UsuarioRepository usuarioRepository) {
+        this.notificacionService = notificacionService;
+        this.usuarioRepository = usuarioRepository;
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse> obtenerNotificaciones() {

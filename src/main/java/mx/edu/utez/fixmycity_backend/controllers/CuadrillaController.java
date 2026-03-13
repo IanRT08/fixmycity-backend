@@ -9,7 +9,6 @@ import mx.edu.utez.fixmycity_backend.modelos.Usuario;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
 import mx.edu.utez.fixmycity_backend.services.AsignacionService;
 import mx.edu.utez.fixmycity_backend.services.CuadrillaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,14 +22,17 @@ import java.util.Optional;
 @RestController
 public class CuadrillaController {
 
-    @Autowired
-    private CuadrillaService cuadrillaService;
+    private final CuadrillaService cuadrillaService;
+    private final AsignacionService asignacionService;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private AsignacionService asignacionService;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    public CuadrillaController(CuadrillaService cuadrillaService, 
+                              AsignacionService asignacionService,
+                              UsuarioRepository usuarioRepository) {
+        this.cuadrillaService = cuadrillaService;
+        this.asignacionService = asignacionService;
+        this.usuarioRepository = usuarioRepository;
+    }
 
     @PostMapping("/api/admin/squads")
     public ResponseEntity<ApiResponse> crearCuadrilla(

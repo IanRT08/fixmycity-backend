@@ -2,6 +2,8 @@ package mx.edu.utez.fixmycity_backend.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +12,8 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -53,13 +57,13 @@ public class JwtUtils {
                     .parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException e) {
-            System.out.println("JWT expirado: " + e.getMessage());
+            logger.warn("JWT expirado: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            System.out.println("JWT no soportado: " + e.getMessage());
+            logger.warn("JWT no soportado: {}", e.getMessage());
         } catch (MalformedJwtException e) {
-            System.out.println("JWT malformado: " + e.getMessage());
+            logger.warn("JWT malformado: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            System.out.println("JWT vacío o nulo: " + e.getMessage());
+            logger.warn("JWT vacío o nulo: {}", e.getMessage());
         }
         return false;
     }

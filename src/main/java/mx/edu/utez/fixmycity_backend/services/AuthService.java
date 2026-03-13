@@ -8,9 +8,6 @@ import mx.edu.utez.fixmycity_backend.modelos.Municipios;
 import mx.edu.utez.fixmycity_backend.modelos.Usuario;
 import mx.edu.utez.fixmycity_backend.repositories.MunicipioRepository;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,23 +20,17 @@ import java.util.Optional;
 @Service
 public class AuthService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final MunicipioRepository municipioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private MunicipioRepository municipioRepository;
-
-    public AuthService(PasswordEncoder passwordEncoder) {
+    public AuthService(UsuarioRepository usuarioRepository, 
+                      MunicipioRepository municipioRepository,
+                      PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.municipioRepository = municipioRepository;
         this.passwordEncoder = passwordEncoder;
     }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Transactional
     public ApiResponse registrarCiudadano(RegistroCiudadanoRequest request) {

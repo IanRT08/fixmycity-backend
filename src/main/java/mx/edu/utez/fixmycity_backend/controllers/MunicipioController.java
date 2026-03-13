@@ -3,7 +3,6 @@ package mx.edu.utez.fixmycity_backend.controllers;
 import mx.edu.utez.fixmycity_backend.dto.request.MunicipioEstadoRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.services.MunicipioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,8 +12,11 @@ import jakarta.validation.Valid;
 @RestController
 public class MunicipioController {
 
-    @Autowired
-    private MunicipioService municipioService;
+    private final MunicipioService municipioService;
+
+    public MunicipioController(MunicipioService municipioService) {
+        this.municipioService = municipioService;
+    }
 
     @GetMapping("/api/zones/active")
     public ResponseEntity<ApiResponse> listarActivos() {

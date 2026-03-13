@@ -8,7 +8,6 @@ import mx.edu.utez.fixmycity_backend.modelos.Usuario;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
 import mx.edu.utez.fixmycity_backend.security.JwtUtils;
 import mx.edu.utez.fixmycity_backend.services.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +19,15 @@ import java.util.Optional;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+    private final JwtUtils jwtUtils;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private JwtUtils jwtUtils;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    public AuthController(AuthService authService, JwtUtils jwtUtils, UsuarioRepository usuarioRepository) {
+        this.authService = authService;
+        this.jwtUtils = jwtUtils;
+        this.usuarioRepository = usuarioRepository;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(

@@ -2,7 +2,6 @@ package mx.edu.utez.fixmycity_backend.controllers;
 
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.services.DashboardService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,8 +9,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/admin/dashboard")
 public class DashboardController {
 
-    @Autowired
-    private DashboardService dashboardService;
+    private final DashboardService dashboardService;
+
+    public DashboardController(DashboardService dashboardService) {
+        this.dashboardService = dashboardService;
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse> obtenerEstadisticas() {

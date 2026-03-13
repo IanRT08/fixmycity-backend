@@ -5,7 +5,6 @@ import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.modelos.Usuario;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
 import mx.edu.utez.fixmycity_backend.services.VoluntarioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,11 +16,13 @@ import java.util.Optional;
 @RestController
 public class VoluntarioController {
 
-    @Autowired
-    private VoluntarioService voluntarioService;
+    private final VoluntarioService voluntarioService;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    public VoluntarioController(VoluntarioService voluntarioService, UsuarioRepository usuarioRepository) {
+        this.voluntarioService = voluntarioService;
+        this.usuarioRepository = usuarioRepository;
+    }
 
     @PostMapping("/api/users/volunteer-request")
     public ResponseEntity<ApiResponse> solicitarVoluntario(

@@ -3,7 +3,6 @@ package mx.edu.utez.fixmycity_backend.controllers;
 import mx.edu.utez.fixmycity_backend.dto.request.RegistroAdminRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.services.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +13,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/admin/users")
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
+
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
 
     @PostMapping("/admin")
     public ResponseEntity<ApiResponse> crearAdmin(
