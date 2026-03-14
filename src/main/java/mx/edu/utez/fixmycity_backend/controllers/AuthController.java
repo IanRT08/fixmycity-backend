@@ -51,7 +51,9 @@ public class AuthController {
         LoginResponse loginData = (LoginResponse) response.getData();
 
         Optional<Usuario> usuarioOpt = usuarioRepository
-                .findByNombreUsuario(request.getNombreUsuario());
+                .buscarIdPorNombre(request.getNombreUsuario())
+                .map(o -> ((Number) o).intValue())
+                .flatMap(id -> usuarioRepository.findById(id));
 
         if (usuarioOpt.isPresent()) {
             String token = jwtUtils.generateToken(

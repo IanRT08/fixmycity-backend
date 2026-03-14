@@ -4,6 +4,67 @@ import jakarta.persistence.*;
 
 import java.util.Date;
 
+@NamedNativeQueries({
+    @NamedNativeQuery(
+        name = "Usuario.findByNombreUsuarioAndEstado",
+        query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "FROM usuario u " +
+                "INNER JOIN municipios m ON u.idMunicipio = m.idMunicipio " +
+                "WHERE u.nombreUsuario = :nombreUsuario AND u.estado = :estado",
+        resultSetMapping = "UsuarioMapping"
+    ),
+    @NamedNativeQuery(
+        name = "Usuario.findByNombreUsuario",
+        query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "FROM usuario u " +
+                "WHERE u.nombreUsuario = :nombreUsuario",
+        resultSetMapping = "UsuarioMapping"
+    ),
+    @NamedNativeQuery(
+        name = "Usuario.findByCorreo",
+        query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "FROM usuario u " +
+                "WHERE u.correo = :correo",
+        resultSetMapping = "UsuarioMapping"
+    ),
+    @NamedNativeQuery(
+        name = "Usuario.findByTipo",
+        query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "FROM usuario u " +
+                "INNER JOIN municipios m ON u.idMunicipio = m.idMunicipio " +
+                "WHERE u.tipo = :tipo",
+        resultSetMapping = "UsuarioMapping"
+    ),
+    @NamedNativeQuery(
+        name = "Usuario.findByEstado",
+        query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "FROM usuario u " +
+                "INNER JOIN municipios m ON u.idMunicipio = m.idMunicipio " +
+                "WHERE u.estado = :estado",
+        resultSetMapping = "UsuarioMapping"
+    )
+})
+@SqlResultSetMapping(
+    name = "UsuarioMapping",
+    entities = @EntityResult(
+        entityClass = Usuario.class,
+        fields = {
+            @FieldResult(name = "idUsuario", column = "idUsuario"),
+            @FieldResult(name = "nombreUsuario", column = "nombreUsuario"),
+            @FieldResult(name = "correo", column = "correo"),
+            @FieldResult(name = "contrasenia", column = "contrasenia"),
+            @FieldResult(name = "fechaNacimiento", column = "fechaNacimiento"),
+            @FieldResult(name = "municipio", column = "idMunicipio"),
+            @FieldResult(name = "tipo", column = "tipo"),
+            @FieldResult(name = "estado", column = "estado")
+        }
+    )
+)
 @Entity
 @Table(name = "usuario")
 public class Usuario {

@@ -15,22 +15,22 @@ import java.util.Optional;
 public interface SolicitudVoluntarioRepository extends JpaRepository<solicitudVoluntario, Integer> {
 
     //Modulo 1.3 - Verificar si el usuario ya tiene una solicitud pendiente
-    @Query(value = "SELECT s.idSolicitud, s.idUsuario, s.estado " +
+    @Query(value = "SELECT s.idSolicitud " +
             "FROM solicitudVoluntario s " +
             "INNER JOIN usuario u ON s.idUsuario = u.idUsuario " +
             "WHERE s.idUsuario = :idUsuario " +
             "AND s.estado = 'pendiente'",
             nativeQuery = true)
-    Optional<solicitudVoluntario> findPendingByUsuario(@Param("idUsuario") int idUsuario);
+    Optional<Object> findPendingIdByUsuario(@Param("idUsuario") int idUsuario);
 
     //Modulo 1.3 - Listar todas las solicitudes según su estado para el panel admin
-    @Query(value = "SELECT s.idSolicitud, s.idUsuario, s.estado " +
+    @Query(value = "SELECT s.idSolicitud " +
             "FROM solicitudVoluntario s " +
             "INNER JOIN usuario u ON s.idUsuario = u.idUsuario " +
             "INNER JOIN informacionVoluntario iv ON s.idSolicitud = iv.idSolicitud " +
             "WHERE s.estado = :estado",
             nativeQuery = true)
-    List<solicitudVoluntario> findByEstado(@Param("estado") String estado);
+    List<Object> findIdsByEstado(@Param("estado") String estado);
 
     //Modulo 1.3 - Aprobar o rechazar una solicitud de voluntario
     @Modifying

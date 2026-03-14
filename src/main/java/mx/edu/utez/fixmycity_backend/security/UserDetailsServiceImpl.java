@@ -22,7 +22,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String nombreUsuario)
             throws UsernameNotFoundException {
 
-        Usuario usuario = usuarioRepository.findByNombreUsuario(nombreUsuario)
+        Usuario usuario = usuarioRepository.buscarIdPorNombre(nombreUsuario)
+                .map(o -> ((Number) o).intValue())
+                .flatMap(id -> usuarioRepository.findById(id))
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Usuario no encontrado: " + nombreUsuario));
 

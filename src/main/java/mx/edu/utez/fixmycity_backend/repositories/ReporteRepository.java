@@ -12,26 +12,26 @@ import java.util.List;
 public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
 
     //Modulo 2.2 - Consultar todos los reportes del ciudadano autenticado
-    @Query(value = "SELECT r.idReporte, r.idUsuario, r.titulo " +
+    @Query(value = "SELECT r.idReporte " +
             "FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "WHERE r.idUsuario = :idUsuario",
             nativeQuery = true)
-    List<Reporte> findByUsuario(@Param("idUsuario") int idUsuario);
+    List<Object> findIdsByUsuario(@Param("idUsuario") int idUsuario);
 
     //Modulo 2.2 - Filtrar reportes del ciudadano por estado
-    @Query(value = "SELECT r.idReporte, r.idUsuario, r.titulo " +
+    @Query(value = "SELECT r.idReporte " +
             "FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "WHERE r.idUsuario = :idUsuario " +
             "AND dr.estado = :estado",
             nativeQuery = true)
-    List<Reporte> findByUsuarioAndEstado(
+    List<Object> findIdsByUsuarioAndEstado(
             @Param("idUsuario") int idUsuario,
             @Param("estado") String estado);
 
     //Modulo 4.1 - Listar todos los reportes para el panel admin con filtros opcionales
-    @Query(value = "SELECT r.idReporte, r.idUsuario, r.titulo " +
+    @Query(value = "SELECT r.idReporte " +
             "FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "INNER JOIN municipios m ON dr.idMunicipio = m.idMunicipio " +
@@ -43,7 +43,7 @@ public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
             "AND (:keyword IS NULL OR r.titulo LIKE '%' || :keyword || '%' " +
             "     OR dr.descripcion LIKE '%' || :keyword || '%')",
             nativeQuery = true)
-    List<Reporte> findWithFilters(
+    List<Object> findIdsWithFilters(
             @Param("estado") String estado,
             @Param("idMunicipio") Integer idMunicipio,
             @Param("fechaInicio") String fechaInicio,
@@ -51,7 +51,7 @@ public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
             @Param("keyword") String keyword);
 
     //Modulo 13 - Feed publico de reportes del municipio del ciudadano
-    @Query(value = "SELECT r.idReporte, r.idUsuario, r.titulo " +
+    @Query(value = "SELECT r.idReporte " +
             "FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "INNER JOIN usuario u ON r.idUsuario = u.idUsuario " +
@@ -59,5 +59,5 @@ public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
             "AND dr.estado NOT IN ('Cancelado') " +
             "ORDER BY dr.fechaRegistro DESC",
             nativeQuery = true)
-    List<Reporte> findFeedByMunicipio(@Param("idMunicipio") int idMunicipio);
+    List<Object> findFeedIdsByMunicipio(@Param("idMunicipio") int idMunicipio);
 }

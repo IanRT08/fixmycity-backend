@@ -42,7 +42,7 @@ public class VoluntarioService {
             return new ApiResponse(false, "Usuario no encontrado");
         }
 
-        if (solicitudRepository.findPendingByUsuario(idUsuario).isPresent()) {
+        if (solicitudRepository.findPendingIdByUsuario(idUsuario).isPresent()) {
             return new ApiResponse(false, "Ya existe una solicitud en proceso");
         }
 
@@ -67,7 +67,11 @@ public class VoluntarioService {
     }
 
     public ApiResponse listarSolicitudesPendientes() {
-        List<solicitudVoluntario> solicitudes = solicitudRepository.findByEstado("pendiente");
+        List<solicitudVoluntario> solicitudes = solicitudRepository.findIdsByEstado("pendiente").stream()
+                .map(o -> ((Number) o).intValue())
+                .map(id -> solicitudRepository.findById(id).orElse(null))
+                .filter(s -> s != null)
+                .collect(Collectors.toList());
 
         List<SolicitudVoluntarioResponse> response = solicitudes.stream().map(s -> {
             informacionVoluntario info = informacionRepository
@@ -95,6 +99,10 @@ public class VoluntarioService {
         }
 
         solicitudVoluntario solicitud = solicitudOpt.get();
+
+        if (voluntarioRepository.findIdByUsuario(solicitud.getUsuario().getIdUsuario()).isPresent()) {
+            return new ApiResponse(false, "El usuario ya es voluntario");
+        }
 
         if (!solicitud.getEstado().equals("pendiente")) {
             return new ApiResponse(false, "La solicitud ya fue procesada");

@@ -83,6 +83,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        .requestMatchers("/test/**").permitAll()
                         //Endpoints públicos
                         //Módulo 1.1 - Registro de ciudadano
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()

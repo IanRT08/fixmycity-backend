@@ -36,11 +36,11 @@ public class UsuarioService {
         }
 
         // Validar que el usuario no exista
-        if (usuarioRepository.findByNombreUsuario(request.getNombreUsuario()).isPresent()) {
+        if (usuarioRepository.buscarIdPorNombre(request.getNombreUsuario()).isPresent()) {
             return new ApiResponse(false, "El nombre de usuario ya está en uso");
         }
 
-        if (usuarioRepository.findByCorreo(request.getCorreo()).isPresent()) {
+        if (usuarioRepository.buscarIdPorCorreo(request.getCorreo()).isPresent()) {
             return new ApiResponse(false, "El correo ya está registrado");
         }
 
@@ -72,7 +72,11 @@ public class UsuarioService {
     }
 
     public ApiResponse listarPorTipo(String tipo) {
-        List<Usuario> usuarios = usuarioRepository.findByTipo(tipo);
+        List<Usuario> usuarios = usuarioRepository.buscarIdsPorTipo(tipo).stream()
+                .map(o -> ((Number) o).intValue())
+                .map(id -> usuarioRepository.findById(id).orElse(null))
+                .filter(u -> u != null)
+                .collect(Collectors.toList());
 
         List<UsuarioResponse> response = usuarios.stream()
                 .map(u -> new UsuarioResponse(

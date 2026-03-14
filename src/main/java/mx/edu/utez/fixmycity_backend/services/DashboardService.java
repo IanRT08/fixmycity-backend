@@ -30,29 +30,29 @@ public class DashboardService {
 
         Map<String, Object> estadisticas = new HashMap<>();
         estadisticas.put("reportesPendientes",
-                reporteRepository.findWithFilters("Pendiente", null, null, null, null).size());
+                reporteRepository.findIdsWithFilters("Pendiente", null, null, null, null).size());
         estadisticas.put("reportesAsignados",
-                reporteRepository.findWithFilters("Asignado", null, null, null, null).size());
+                reporteRepository.findIdsWithFilters("Asignado", null, null, null, null).size());
         estadisticas.put("reportesEnCamino",
-                reporteRepository.findWithFilters("En camino", null, null, null, null).size());
+                reporteRepository.findIdsWithFilters("En camino", null, null, null, null).size());
         estadisticas.put("reportesEnCurso",
-                reporteRepository.findWithFilters("En curso", null, null, null, null).size());
+                reporteRepository.findIdsWithFilters("En curso", null, null, null, null).size());
         estadisticas.put("reportesFinalizados",
-                reporteRepository.findWithFilters("Finalizado", null, null, null, null).size());
+                reporteRepository.findIdsWithFilters("Finalizado", null, null, null, null).size());
         estadisticas.put("reportesCancelados",
-                reporteRepository.findWithFilters("Cancelado", null, null, null, null).size());
+                reporteRepository.findIdsWithFilters("Cancelado", null, null, null, null).size());
         estadisticas.put("reportesRechazados",
-                reporteRepository.findWithFilters("Rechazado", null, null, null, null).size());
+                reporteRepository.findIdsWithFilters("Rechazado", null, null, null, null).size());
         estadisticas.put("totalCiudadanos",
-                usuarioRepository.findByTipo("ciudadano").size());
+                usuarioRepository.buscarIdsPorTipo("ciudadano").size());
         estadisticas.put("totalVoluntarios",
-                usuarioRepository.findByTipo("voluntario").size());
+                usuarioRepository.buscarIdsPorTipo("voluntario").size());
 
         estadisticas.put("cuadrillasActivas",
-                cuadrillaRepository.findByEstado("activa").size());
+                cuadrillaRepository.findIdsByEstado("activa").size());
 
         estadisticas.put("solicitudesPendientes",
-                solicitudVoluntarioRepository.findByEstado("pendiente").size());
+                solicitudVoluntarioRepository.findIdsByEstado("pendiente").size());
 
         return new ApiResponse(true, "Estadísticas obtenidas correctamente", estadisticas);
     }
@@ -62,15 +62,15 @@ public class DashboardService {
         Map<String, Object> estadisticas = new HashMap<>();
 
         estadisticas.put("reportesPendientes",
-                reporteRepository.findWithFilters("Pendiente", idMunicipio, null, null, null).size());
+                reporteRepository.findIdsWithFilters("Pendiente", idMunicipio, null, null, null).size());
         estadisticas.put("reportesFinalizados",
-                reporteRepository.findWithFilters("Finalizado", idMunicipio, null, null, null).size());
+                reporteRepository.findIdsWithFilters("Finalizado", idMunicipio, null, null, null).size());
         estadisticas.put("reportesCancelados",
-                reporteRepository.findWithFilters("Cancelado", idMunicipio, null, null, null).size());
+                reporteRepository.findIdsWithFilters("Cancelado", idMunicipio, null, null, null).size());
         estadisticas.put("reportesEnProceso",
-                reporteRepository.findWithFilters("En curso", idMunicipio, null, null, null).size()
-                        + reporteRepository.findWithFilters("En camino", idMunicipio, null, null, null).size()
-                        + reporteRepository.findWithFilters("Asignado", idMunicipio, null, null, null).size());
+                reporteRepository.findIdsWithFilters("En curso", idMunicipio, null, null, null).size()
+                        + reporteRepository.findIdsWithFilters("En camino", idMunicipio, null, null, null).size()
+                        + reporteRepository.findIdsWithFilters("Asignado", idMunicipio, null, null, null).size());
 
         return new ApiResponse(true, "Estadísticas del municipio obtenidas correctamente", estadisticas);
     }
@@ -80,11 +80,11 @@ public class DashboardService {
         Map<String, Object> estadisticas = new HashMap<>();
 
         estadisticas.put("reportesRegistrados",
-                reporteRepository.findWithFilters(null, null, fechaInicio, fechaFin, null).size());
+                reporteRepository.findIdsWithFilters(null, null, fechaInicio, fechaFin, null).size());
         estadisticas.put("reportesFinalizados",
-                reporteRepository.findWithFilters("Finalizado", null, fechaInicio, fechaFin, null).size());
+                reporteRepository.findIdsWithFilters("Finalizado", null, fechaInicio, fechaFin, null).size());
         estadisticas.put("reportesCancelados",
-                reporteRepository.findWithFilters("Cancelado", null, fechaInicio, fechaFin, null).size());
+                reporteRepository.findIdsWithFilters("Cancelado", null, fechaInicio, fechaFin, null).size());
 
         return new ApiResponse(true, "Estadísticas por período obtenidas correctamente", estadisticas);
     }

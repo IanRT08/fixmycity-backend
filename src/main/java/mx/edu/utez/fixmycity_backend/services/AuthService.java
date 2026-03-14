@@ -38,10 +38,10 @@ public class AuthService {
         if (!request.getContrasenia().equals(request.getConfirmarContrasenia())) {
             return new ApiResponse(false, "Las contraseñas no coinciden");
         }
-        if (usuarioRepository.findByNombreUsuario(request.getNombreUsuario()).isPresent()) {
+        if (usuarioRepository.buscarIdPorNombre(request.getNombreUsuario()).isPresent()) {
             return new ApiResponse(false, "El nombre de usuario ya está en uso");
         }
-        if (usuarioRepository.findByCorreo(request.getCorreo()).isPresent()) {
+        if (usuarioRepository.buscarIdPorCorreo(request.getCorreo()).isPresent()) {
             return new ApiResponse(false, "El correo ya está registrado");
         }
         if (!esMayorDeEdad(request.getFechaNacimiento())) {
@@ -72,7 +72,12 @@ public class AuthService {
     // Módulo 1.2 - Inicio de sesión (ciudadano, voluntario, administrador)
     public ApiResponse login(LoginRequest request) {
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(request.getNombreUsuario());
+        Optional<Object> idOpt = usuarioRepository.buscarIdPorNombreYEstado(request.getNombreUsuario(), "activo");
+        if (idOpt.isEmpty()) {
+            return new ApiResponse(false, "Usuario no encontrado");
+        }
+        int id = ((Number) idOpt.get()).intValue();
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
         if (usuarioOpt.isEmpty()) {
             return new ApiResponse(false, "Usuario no encontrado");
         }
@@ -81,9 +86,6 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.getContrasenia(), usuario.getContrasenia())) {
             return new ApiResponse(false, "Contraseña incorrecta");
-        }
-        if (!usuario.getEstado().equals("activo")) {
-            return new ApiResponse(false, "La cuenta está desactivada");
         }
 
         LoginResponse response = new LoginResponse(

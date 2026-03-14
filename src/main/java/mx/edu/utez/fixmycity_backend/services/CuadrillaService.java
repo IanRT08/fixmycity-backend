@@ -34,7 +34,7 @@ public class CuadrillaService {
     @Transactional
     public ApiResponse crearCuadrilla(CuadrillaRequest request) {
 
-        if (cuadrillaRepository.findByNombreCuadrilla(request.getNombreCuadrilla()).isPresent()) {
+        if (cuadrillaRepository.findIdByNombreCuadrilla(request.getNombreCuadrilla()).isPresent()) {
             return new ApiResponse(false, "Ya existe una cuadrilla con ese nombre");
         }
 
@@ -78,7 +78,11 @@ public class CuadrillaService {
     }
 
     public ApiResponse listarCuadrillas(String estado) {
-        List<Cuadrilla> cuadrillas = cuadrillaRepository.findByEstado(estado);
+        List<Cuadrilla> cuadrillas = cuadrillaRepository.findIdsByEstado(estado).stream()
+                .map(o -> ((Number) o).intValue())
+                .map(id -> cuadrillaRepository.findById(id).orElse(null))
+                .filter(c -> c != null)
+                .collect(Collectors.toList());
 
         List<CuadrillaResponse> response = cuadrillas.stream().map(c -> {
             List<miembrosCuadrilla> miembros = miembrosCuadrillaRepository
@@ -102,7 +106,11 @@ public class CuadrillaService {
     }
 
     public ApiResponse listarVoluntariosDisponibles(int idMunicipio) {
-        List<Voluntario> voluntarios = voluntarioRepository.findAvailableByMunicipio(idMunicipio);
+        List<Voluntario> voluntarios = voluntarioRepository.findAvailableIdsByMunicipio(idMunicipio).stream()
+                .map(o -> ((Number) o).intValue())
+                .map(id -> voluntarioRepository.findById(id).orElse(null))
+                .filter(v -> v != null)
+                .collect(Collectors.toList());
 
         List<String> nombres = voluntarios.stream()
                 .map(v -> v.getUsuario().getNombreUsuario())

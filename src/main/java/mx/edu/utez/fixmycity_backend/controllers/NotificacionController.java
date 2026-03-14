@@ -66,7 +66,9 @@ public class NotificacionController {
     private int getIdUsuarioAutenticado() {
         String nombreUsuario = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.buscarIdPorNombre(nombreUsuario)
+                .map(o -> ((Number) o).intValue())
+                .flatMap(id -> usuarioRepository.findById(id));
         return usuarioOpt.map(Usuario::getIdUsuario).orElse(-1);
     }
 }

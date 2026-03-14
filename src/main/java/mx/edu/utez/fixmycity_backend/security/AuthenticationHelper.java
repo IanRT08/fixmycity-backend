@@ -28,7 +28,9 @@ public class AuthenticationHelper {
         }
 
         String nombreUsuario = authentication.getName();
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.buscarIdPorNombre(nombreUsuario)
+                .map(o -> ((Number) o).intValue())
+                .flatMap(id -> usuarioRepository.findById(id));
         return usuarioOpt.map(Usuario::getIdUsuario).orElse(-1);
     }
 
@@ -43,7 +45,9 @@ public class AuthenticationHelper {
         }
 
         String nombreUsuario = authentication.getName();
-        return usuarioRepository.findByNombreUsuario(nombreUsuario);
+        return usuarioRepository.buscarIdPorNombre(nombreUsuario)
+                .map(o -> ((Number) o).intValue())
+                .flatMap(id -> usuarioRepository.findById(id));
     }
 
     /**

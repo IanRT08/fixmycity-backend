@@ -90,7 +90,11 @@ public class ReporteService {
     }
 
     public ApiResponse obtenerMisReportes(int idUsuario) {
-        List<Reporte> reportes = reporteRepository.findByUsuario(idUsuario);
+        List<Reporte> reportes = reporteRepository.findIdsByUsuario(idUsuario).stream()
+                .map(o -> ((Number) o).intValue())
+                .map(id -> reporteRepository.findById(id).orElse(null))
+                .filter(r -> r != null)
+                .collect(Collectors.toList());
         return new ApiResponse(true, "Reportes obtenidos correctamente", mapearReportes(reportes));
     }
 
@@ -174,8 +178,12 @@ public class ReporteService {
 
     public ApiResponse listarReportesAdmin(String estado, Integer idMunicipio,
                                            String fechaInicio, String fechaFin, String keyword) {
-        List<Reporte> reportes = reporteRepository.findWithFilters(
-                estado, idMunicipio, fechaInicio, fechaFin, keyword);
+        List<Reporte> reportes = reporteRepository.findIdsWithFilters(
+                estado, idMunicipio, fechaInicio, fechaFin, keyword).stream()
+                .map(o -> ((Number) o).intValue())
+                .map(id -> reporteRepository.findById(id).orElse(null))
+                .filter(r -> r != null)
+                .collect(Collectors.toList());
         return new ApiResponse(true, "Reportes obtenidos correctamente", mapearReportes(reportes));
     }
 
@@ -218,7 +226,11 @@ public class ReporteService {
     }
 
     public ApiResponse obtenerFeed(int idMunicipio) {
-        List<Reporte> reportes = reporteRepository.findFeedByMunicipio(idMunicipio);
+        List<Reporte> reportes = reporteRepository.findFeedIdsByMunicipio(idMunicipio).stream()
+                .map(o -> ((Number) o).intValue())
+                .map(id -> reporteRepository.findById(id).orElse(null))
+                .filter(r -> r != null)
+                .collect(Collectors.toList());
         return new ApiResponse(true, "Feed obtenido correctamente", mapearReportes(reportes));
     }
 

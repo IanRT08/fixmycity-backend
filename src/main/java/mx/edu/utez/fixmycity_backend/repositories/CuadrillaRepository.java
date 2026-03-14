@@ -15,14 +15,14 @@ import java.util.Optional;
 public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
 
     //Modulo 3.1 - Verificar si ya existe una cuadrilla con ese nombre
-    @Query(value = "SELECT c.idCuadrilla, c.nombreCuadrilla, c.idMunicipio, c.idLider, c.estado " +
+    @Query(value = "SELECT c.idCuadrilla " +
             "FROM cuadrilla c " +
             "WHERE c.nombreCuadrilla = :nombre",
             nativeQuery = true)
-    Optional<Cuadrilla> findByNombreCuadrilla(@Param("nombre") String nombre);
+    Optional<Object> findIdByNombreCuadrilla(@Param("nombre") String nombre);
 
     //Modulo 3.2 - Listar cuadrillas activas de un municipio para asignar un reporte
-    @Query(value = "SELECT c.idCuadrilla, c.nombreCuadrilla, c.idMunicipio, c.idLider, c.estado " +
+    @Query(value = "SELECT c.idCuadrilla " +
             "FROM cuadrilla c " +
             "INNER JOIN municipios m ON c.idMunicipio = m.idMunicipio " +
             "WHERE c.idMunicipio = :idMunicipio " +
@@ -33,15 +33,15 @@ public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
             "   WHERE rac.idCuadrilla = c.idCuadrilla " +
             "   AND dr.estado IN ('Asignado', 'En camino', 'En curso'))",
             nativeQuery = true)
-    List<Cuadrilla> findAvailableByMunicipio(@Param("idMunicipio") int idMunicipio);
+    List<Object> findAvailableIdsByMunicipio(@Param("idMunicipio") int idMunicipio);
 
     //Modulo 3.1 - Listar todas las cuadrillas para el panel de administracion
-    @Query(value = "SELECT c.idCuadrilla, c.nombreCuadrilla, c.idMunicipio, c.idLider, c.estado " +
+    @Query(value = "SELECT c.idCuadrilla " +
             "FROM cuadrilla c " +
             "INNER JOIN municipios m ON c.idMunicipio = m.idMunicipio " +
             "WHERE c.estado = :estado",
             nativeQuery = true)
-    List<Cuadrilla> findByEstado(@Param("estado") String estado);
+    List<Object> findIdsByEstado(@Param("estado") String estado);
 
     //Modulo 3.1 - Cambiar el estado de una cuadrilla
     @Modifying

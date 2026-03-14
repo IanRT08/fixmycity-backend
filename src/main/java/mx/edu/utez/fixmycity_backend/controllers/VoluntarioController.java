@@ -31,7 +31,9 @@ public class VoluntarioController {
 
         String nombreUsuario = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.buscarIdPorNombre(nombreUsuario)
+                .map(o -> ((Number) o).intValue())
+                .flatMap(id -> usuarioRepository.findById(id));
 
         if (usuarioOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

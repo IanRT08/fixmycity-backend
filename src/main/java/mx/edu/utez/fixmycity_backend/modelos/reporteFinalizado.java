@@ -9,7 +9,11 @@ import java.util.Date;
 public class reporteFinalizado {
 
     @Id
+    @Column(name = "idReporte")
+    private int id;
+
     @OneToOne
+    @MapsId
     @JoinColumn(name = "idReporte", nullable = false)
     private Reporte idReporte;
 

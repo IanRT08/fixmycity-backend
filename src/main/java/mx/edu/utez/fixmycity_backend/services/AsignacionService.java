@@ -103,7 +103,9 @@ public class AsignacionService {
     @Transactional
     public ApiResponse registrarVoto(VotacionRequest request, int idUsuario) {
 
-        Optional<Voluntario> voluntarioOpt = voluntarioRepository.findByUsuario(idUsuario);
+        Optional<Voluntario> voluntarioOpt = voluntarioRepository.findIdByUsuario(idUsuario)
+                .map(o -> ((Number) o).intValue())
+                .flatMap(id -> voluntarioRepository.findById(id));
         if (voluntarioOpt.isEmpty()) {
             return new ApiResponse(false, "No eres voluntario");
         }

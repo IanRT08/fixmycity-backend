@@ -13,15 +13,15 @@ import java.util.Optional;
 public interface VoluntarioRepository extends JpaRepository<Voluntario, Integer> {
 
     //Modulo 1.3 - Buscar voluntario por su usuario para verificar si ya existe
-    @Query(value = "SELECT v.idVoluntario, v.idUsuario " +
+    @Query(value = "SELECT v.idVoluntario " +
             "FROM voluntario v " +
             "INNER JOIN usuario u ON v.idUsuario = u.idUsuario " +
             "WHERE v.idUsuario = :idUsuario",
             nativeQuery = true)
-    Optional<Voluntario> findByUsuario(@Param("idUsuario") int idUsuario);
+    Optional<Object> findIdByUsuario(@Param("idUsuario") int idUsuario);
 
     //Modulo 3.1 - Listar voluntarios aprobados de un municipio para formar cuadrilla
-    @Query(value = "SELECT v.idVoluntario, v.idUsuario " +
+    @Query(value = "SELECT v.idVoluntario " +
             "FROM voluntario v " +
             "INNER JOIN usuario u ON v.idUsuario = u.idUsuario " +
             "INNER JOIN municipios m ON u.idMunicipio = m.idMunicipio " +
@@ -33,5 +33,5 @@ public interface VoluntarioRepository extends JpaRepository<Voluntario, Integer>
             "   WHERE mc.idMiembro = v.idVoluntario " +
             "   AND c.estado = 'activa')",
             nativeQuery = true)
-    List<Voluntario> findAvailableByMunicipio(@Param("idMunicipio") int idMunicipio);
+    List<Object> findAvailableIdsByMunicipio(@Param("idMunicipio") int idMunicipio);
 }
