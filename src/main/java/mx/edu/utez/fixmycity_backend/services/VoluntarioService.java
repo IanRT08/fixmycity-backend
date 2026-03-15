@@ -90,10 +90,6 @@ public class VoluntarioService {
                     .filter(s -> s != null)
                     .collect(Collectors.toList());
         }
-                .map(o -> ((Number) o).intValue())
-                .map(id -> solicitudRepository.findById(id).orElse(null))
-                .filter(s -> s != null)
-                .collect(Collectors.toList());
 
         List<SolicitudVoluntarioResponse> response = solicitudes.stream().map(s -> {
             informacionVoluntario info = informacionRepository
