@@ -96,29 +96,35 @@ public class SecurityConfig {
                         //Módulo 6.1 - Listar municipios activos
                         .requestMatchers(HttpMethod.GET, "/api/zones/active").permitAll()
 
-                        //Solo administrador
-                        //Módulo 1.4 - Gestión de usuarios
-                        .requestMatchers("/api/admin/users/**").hasRole("ADMIN")
-                        //Módulos 4.1, 4.4 - Panel y gestión de reportes
-                        .requestMatchers("/api/admin/reports/**").hasRole("ADMIN")
-                        //Módulo 3.1, 3.2 - Gestión y asignación de cuadrillas
-                        .requestMatchers("/api/admin/squads/**").hasRole("ADMIN")
-                        //Módulo 9 - Dashboard
-                        .requestMatchers("/api/admin/dashboard/**").hasRole("ADMIN")
+                        //Solo superadmin
+                        //Módulo 1.4 - Crear administradores
+                        .requestMatchers(HttpMethod.POST, "/api/admin/users/admin").hasRole("SUPERADMIN")
                         //Módulo 6.1 - Habilitar/deshabilitar municipios
-                        .requestMatchers("/api/zones/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/zones/**").hasRole("SUPERADMIN")
 
-                        //Ciudadano y voluntario
+                        //Admin y superadmin
+                        //Módulo 1.4 - Gestión de usuarios
+                        .requestMatchers("/api/admin/users/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                        //Módulos 4.1, 4.4 - Panel y gestión de reportes
+                        .requestMatchers("/api/admin/reports/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                        //Módulo 3.1, 3.2 - Gestión y asignación de cuadrillas
+                        .requestMatchers("/api/admin/squads/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                        //Módulo 9 - Dashboard
+                        .requestMatchers("/api/admin/dashboard/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                        //Módulo 6.1 - Listar municipios
+                        .requestMatchers(HttpMethod.GET, "/api/zones/**").hasAnyRole("ADMIN", "SUPERADMIN")
+
+                        //Ciudadano, voluntario, admin y superadmin
                         //Módulo 2.1, 2.2, 2.3, 2.4 - Gestión de reportes propios
-                        .requestMatchers("/api/reports/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN")
+                        .requestMatchers("/api/reports/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN", "SUPERADMIN")
                         // Módulo 1.3 - Solicitud de voluntario
-                        .requestMatchers("/api/users/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN")
+                        .requestMatchers("/api/users/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN", "SUPERADMIN")
                         // Módulo 5.1, 5.2 - Notificaciones
-                        .requestMatchers("/api/notifications/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN")
+                        .requestMatchers("/api/notifications/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN", "SUPERADMIN")
 
-                        //Solo voluntario
+                        //Solo voluntario, admin y superadmin
                         //Módulo 3.3, 3.4, 3.6 - Votación y seguimiento de atención
-                        .requestMatchers("/api/squads/**").hasAnyRole("VOLUNTARIO", "ADMIN")
+                        .requestMatchers("/api/squads/**").hasAnyRole("VOLUNTARIO", "ADMIN", "SUPERADMIN")
                         //Cualquier otra ruta requiere autenticación
                         .anyRequest().authenticated()
                 )
