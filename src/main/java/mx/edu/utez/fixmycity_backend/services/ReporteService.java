@@ -85,7 +85,7 @@ public class ReporteService {
             }
         }
 
-        registrarHistorial(reporte, idUsuario, null, "Pendiente");
+        registrarHistorial(reporte, idUsuario, "Pendiente", "Pendiente");
         return new ApiResponse(true, "Reporte creado correctamente");
     }
 
@@ -174,6 +174,45 @@ public class ReporteService {
         detallesReporteRepository.updateEstado(idReporte, "Cancelado");
 
         return new ApiResponse(true, "Reporte cancelado correctamente");
+    }
+
+    public ApiResponse obtenerDetalleAdmin(int idReporte, int idAdmin) {
+        Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
+        if (adminOpt.isEmpty()) {
+            return new ApiResponse(false, "Administrador no encontrado");
+        }
+
+        Optional<Reporte> reporteOpt = reporteRepository.findById(idReporte);
+        if (reporteOpt.isEmpty()) {
+            return new ApiResponse(false, "Reporte no encontrado");
+        }
+
+        Usuario admin = adminOpt.get();
+        if (!admin.getTipo().equals("superadmin")) {
+            Optional<detallesReporte> detallesOpt = detallesReporteRepository.findByReporte(idReporte);
+            if (detallesOpt.isEmpty() ||
+                    detallesOpt.get().getMunicipios().getIdMunicipio() != admin.getMunicipio().getIdMunicipio()) {
+                return new ApiResponse(false, "No tienes permiso para ver este reporte");
+            }
+        }
+
+        Reporte reporte = reporteOpt.get();
+        detallesReporte detalles = detallesReporteRepository.findByReporte(idReporte).orElse(null);
+        List<String> fotos = fotosReporteRepository.findByReporte(idReporte).stream()
+                .map(f -> new String(f.getFoto(), java.nio.charset.StandardCharsets.UTF_8))
+                .collect(Collectors.toList());
+
+        ReporteResponse response = new ReporteResponse(
+                reporte.getIdReporte(),
+                reporte.getTitulo(),
+                detalles != null ? detalles.getDescripcion() : null,
+                detalles != null ? detalles.getEstado() : null,
+                detalles != null ? detalles.getMunicipios().getNombre() : null,
+                detalles != null ? detalles.getFechaRegistro() : null,
+                reporte.getUsuario().getNombreUsuario(),
+                fotos
+        );
+        return new ApiResponse(true, "Reporte obtenido correctamente", response);
     }
 
     public ApiResponse listarReportesAdmin(String estado, Integer idMunicipio,

@@ -1,6 +1,7 @@
 package mx.edu.utez.fixmycity_backend.dto.response;
 
 import java.util.Date;
+import java.util.List;
 
 // Módulos 2.1, 2.2, 4.1, 13 - Datos de un reporte para ciudadano y administrador
 public class ReporteResponse {
@@ -13,6 +14,7 @@ public class ReporteResponse {
     private Date fechaRegistro;
     // El nombreUsuario se muestra solo como alias por privacidad (requerimiento legal DFR)
     private String nombreUsuario;
+    private List<String> fotos;
 
     public ReporteResponse(int idReporte, String titulo, String descripcion,
                            String estado, String municipio, Date fechaRegistro,
@@ -24,6 +26,13 @@ public class ReporteResponse {
         this.municipio = municipio;
         this.fechaRegistro = fechaRegistro;
         this.nombreUsuario = nombreUsuario;
+    }
+
+    public ReporteResponse(int idReporte, String titulo, String descripcion,
+                           String estado, String municipio, Date fechaRegistro,
+                           String nombreUsuario, List<String> fotos) {
+        this(idReporte, titulo, descripcion, estado, municipio, fechaRegistro, nombreUsuario);
+        this.fotos = fotos;
     }
 
     public int getIdReporte() {
@@ -73,5 +82,12 @@ public class ReporteResponse {
     }
     public void setNombreUsuario(String nombreUsuario) {
         this.nombreUsuario = nombreUsuario;
+    }
+
+    public List<String> getFotos() {
+        return fotos;
+    }
+    public void setFotos(List<String> fotos) {
+        this.fotos = fotos;
     }
 }

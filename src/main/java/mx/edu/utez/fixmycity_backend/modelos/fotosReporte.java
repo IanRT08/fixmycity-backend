@@ -11,7 +11,7 @@ public class fotosReporte {
     private int idFoto;
 
     @ManyToOne
-    @JoinColumn(name = "reporte", nullable = false)
+    @JoinColumn(name = "idReporte", nullable = false)
     private Reporte reporte;
 
     @Lob

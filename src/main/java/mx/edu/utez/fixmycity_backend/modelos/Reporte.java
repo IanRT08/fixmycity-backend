@@ -11,7 +11,7 @@ public class Reporte {
     private int idReporte;
 
     @ManyToOne
-    @JoinColumn(name = "usuario", nullable = false)
+    @JoinColumn(name = "idUsuario", nullable = false)
     private Usuario usuario;
 
     @Column(name = "titulo", nullable = false, length = 60)

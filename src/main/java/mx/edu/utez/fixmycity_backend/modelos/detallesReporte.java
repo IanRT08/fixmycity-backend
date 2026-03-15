@@ -21,7 +21,7 @@ public class detallesReporte {
     private String descripcion;
 
     @ManyToOne
-    @JoinColumn(name = "municipios", nullable = false)
+    @JoinColumn(name = "idMunicipio", nullable = false)
     private Municipios municipios;
 
     @Column(name = "estado", nullable = false, length = 15)

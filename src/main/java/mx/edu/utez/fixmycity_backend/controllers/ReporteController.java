@@ -105,6 +105,20 @@ public class ReporteController {
     }
 
 
+    @GetMapping("/api/admin/reports/{id}")
+    public ResponseEntity<ApiResponse> obtenerDetalleAdmin(@PathVariable int id) {
+
+        int idAdmin = getIdUsuarioAutenticado();
+        if (idAdmin == -1) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Usuario no autenticado"));
+        }
+
+        ApiResponse response = reporteService.obtenerDetalleAdmin(id, idAdmin);
+        HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+        return ResponseEntity.status(status).body(response);
+    }
+
     @GetMapping("/api/admin/reports")
     public ResponseEntity<ApiResponse> listarReportesAdmin(
             @RequestParam(required = false) String estado,
