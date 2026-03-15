@@ -10,12 +10,16 @@ import mx.edu.utez.fixmycity_backend.repositories.TokenRecuperacionRepository;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StreamUtils;
 
+import jakarta.mail.internet.MimeMessage;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -41,7 +45,7 @@ public class RecuperacionService {
     private String mailFrom;
 
     @Transactional
-    public ApiResponse solicitarRecuperacion(ForgotPasswordRequest request) {
+    public ApiResponse solicitarRecuperacion(ForgotPasswordRequest request) throws Exception {
         Optional<Object> idOpt = usuarioRepository.buscarIdPorCorreo(request.getCorreo());
         if (idOpt.isEmpty()) {
             return new ApiResponse(false, "No existe una cuenta con ese correo");
@@ -62,12 +66,20 @@ public class RecuperacionService {
         tokenRecuperacion.setUsado(false);
         tokenRepository.save(tokenRecuperacion);
 
-        SimpleMailMessage mensaje = new SimpleMailMessage();
-        mensaje.setFrom(mailFrom);
-        mensaje.setTo(request.getCorreo());
-        mensaje.setSubject("FixMyCity - Recuperación de contraseña");
-        mensaje.setText("Tu código de recuperación es: " + token + "\nExpira en 15 minutos.");
-        mailSender.send(mensaje);
+        ClassPathResource templateResource = new ClassPathResource("recovery-email-template.html");
+        String html = StreamUtils.copyToString(templateResource.getInputStream(), StandardCharsets.UTF_8);
+        html = html.replace("{{nombreUsuario}}", usuario.getNombreUsuario());
+        html = html.replace("{{token}}", token);
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        helper.setFrom(mailFrom);
+        helper.setTo(request.getCorreo());
+        helper.setSubject("FixMyCity - Recuperación de contraseña");
+        helper.setText(html, true);
+        helper.addInline("logoFMC", new ClassPathResource("LogoFMC.png"));
+        helper.addInline("mailCat", new ClassPathResource("MailCat.png"));
+        mailSender.send(mimeMessage);
 
         return new ApiResponse(true, "Se envió un código de recuperación a tu correo");
     }

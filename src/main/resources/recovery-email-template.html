@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Código de recuperación – FixMyCity</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-collapse: collapse; }
+    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+    a { text-decoration: none; }
+
+    /* ── Base ── */
+    body {
+      background-color: #0a0a0a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 100% !important;
+    }
+
+    /* ── Wrapper ── */
+    .email-wrapper {
+      background-color: #0a0a0a;
+      padding: 40px 16px;
+      width: 100%;
+    }
+
+    /* ── Card ── */
+    .email-card {
+      background-color: #111111;
+      border-radius: 20px;
+      margin: 0 auto;
+      max-width: 480px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    /* ── Inner padding ── */
+    .email-body {
+      padding: 44px 40px 36px;
+      text-align: center;
+    }
+
+    /* ── Logo area ── */
+    .logo-wrap {
+      margin-bottom: 28px;
+    }
+    .logo-icon {
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    .logo-icon svg {
+      display: block;
+      margin: 0 auto;
+    }
+    .logo-text {
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .logo-text span {
+      font-weight: 300;
+    }
+
+    /* ── Mascot ── */
+    .mascot-wrap {
+      margin-bottom: 28px;
+    }
+    .mascot-wrap svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* ── Greeting ── */
+    .greeting {
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      color: #b0b0b0;
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    /* ── Code box ── */
+    .code-box {
+      background-color: #1e1e1e;
+      border-radius: 14px;
+      display: block;
+      margin: 0 auto 28px;
+      padding: 20px 16px;
+      width: 100%;
+    }
+    .code-digits {
+      color: #ffffff;
+      font-family: 'Courier New', 'SF Mono', 'Fira Code', Consolas, monospace;
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      line-height: 1;
+      /* Thymeleaf variable: th:text="${recoveryCode}" */
+    }
+
+    /* ── Expiry notice ── */
+    .expiry-text {
+      color: #c0c0c0;
+      font-size: 15px;
+      line-height: 1.55;
+      margin-bottom: 28px;
+    }
+    .expiry-text strong {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid #2a2a2a;
+      margin: 0 0 20px;
+    }
+
+    /* ── Footer note ── */
+    .footer-note {
+      color: #888888;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .footer-note strong {
+      color: #aaaaaa;
+      font-weight: 600;
+    }
+
+    /* ── Responsive ── */
+    @media only screen and (max-width: 520px) {
+      .email-body { padding: 36px 24px 28px; }
+      .code-digits { font-size: 34px; letter-spacing: 0.2em; }
+      .greeting { font-size: 20px; }
+    }
+    @media only screen and (max-width: 360px) {
+      .email-body { padding: 28px 16px 22px; }
+      .code-digits { font-size: 28px; letter-spacing: 0.15em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" class="email-card" cellpadding="0" cellspacing="0" width="100%" style="max-width:480px;">
+            <tr>
+              <td class="email-body">
+
+                <!-- ── Logo ── -->
+                <div class="logo-wrap">
+                  <div class="logo-icon">
+                    <img src="cid:logoFMC" alt="FixMyCity" width="48" height="48" style="display:block;margin:0 auto;" />
+                  </div>
+                </div>
+
+                <!-- ── Mascot ── -->
+                <div class="mascot-wrap">
+                  <img src="cid:mailCat" alt="FixMyCity Cat" width="160" height="160" style="display:block;margin:0 auto;" />
+                </div>
+
+                <!-- ── Greeting ── -->
+                <!--
+                  Thymeleaf: replace 'Ian' with th:text="${userName}"
+                  Plain Java (String.format / MessageFormat): use %s or {0}
+                -->
+                <p class="greeting">Hola, {{nombreUsuario}}</p>
+                <p class="subtitle">Tu código de recuperación para FixMyCity es:</p>
+
+                <!-- ── Code box ── -->
+                <!--
+                  Thymeleaf: th:text="${recoveryCode}"
+                  Java template: replace inner text with placeholder
+                -->
+                <div class="code-box">
+                  <span class="code-digits">{{token}}</span>
+                </div>
+
+                <!-- ── Expiry ── -->
+                <p class="expiry-text">
+                  El código expira en <strong>15 minutos</strong>,<br />
+                  no lo compartas con <strong>nadie.</strong>
+                </p>
+
+                <hr class="divider" />
+
+                <!-- ── Footer note ── -->
+                <p class="footer-note">
+                  <strong>Este código solo puede usarse una vez.</strong><br />
+                  Si no solicitaste este código, ignora este correo. No respondas este mensaje.
+                </p>
+
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

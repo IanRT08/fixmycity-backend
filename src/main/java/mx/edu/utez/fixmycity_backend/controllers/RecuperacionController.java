@@ -22,7 +22,7 @@ public class RecuperacionController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse> solicitarRecuperacion(
-            @RequestBody @Valid ForgotPasswordRequest request) {
+            @RequestBody @Valid ForgotPasswordRequest request) throws Exception {
 
         ApiResponse response = recuperacionService.solicitarRecuperacion(request);
         HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
