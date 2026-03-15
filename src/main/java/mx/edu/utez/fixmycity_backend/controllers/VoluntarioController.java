@@ -59,6 +59,15 @@ public class VoluntarioController {
         return ResponseEntity.ok(response);
     }
 
+    private int getIdUsuarioAutenticado() {
+        String nombreUsuario = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        Optional<Usuario> usuarioOpt = usuarioRepository.buscarIdPorNombre(nombreUsuario)
+                .map(o -> ((Number) o).intValue())
+                .flatMap(id -> usuarioRepository.findById(id));
+        return usuarioOpt.map(Usuario::getIdUsuario).orElse(-1);
+    }
+
     @PutMapping("/api/admin/users/volunteer-requests/{id}")
     public ResponseEntity<ApiResponse> responderSolicitud(
             @PathVariable int id,
