@@ -91,6 +91,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         //Módulo 1.2 - Login
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        //Recuperación de contraseña
+                        .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/verify-token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
                         //Módulo 13 - Feed público (no requiere login)
                         .requestMatchers(HttpMethod.GET, "/api/feed/**").permitAll()
                         //Módulo 6.1 - Listar municipios activos
