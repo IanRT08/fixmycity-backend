@@ -79,15 +79,28 @@ public class CuadrillaService {
 
     public ApiResponse listarCuadrillas(String estado, int idAdmin) {
         Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
-        if (adminOpt.isEmpty() || adminOpt.get().getMunicipio() == null) {
-            return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
+        if (adminOpt.isEmpty()) {
+            return new ApiResponse(false, "Administrador no encontrado");
         }
-        int idMunicipio = adminOpt.get().getMunicipio().getIdMunicipio();
-        List<Cuadrilla> cuadrillas = cuadrillaRepository.findIdsByEstadoAndMunicipio(estado, idMunicipio).stream()
-                .map(o -> ((Number) o).intValue())
-                .map(id -> cuadrillaRepository.findById(id).orElse(null))
-                .filter(c -> c != null)
-                .collect(Collectors.toList());
+        Usuario admin = adminOpt.get();
+
+        List<Cuadrilla> cuadrillas;
+        if (admin.getTipo().equals("superadmin")) {
+            cuadrillas = cuadrillaRepository.findIdsByEstado(estado).stream()
+                    .map(o -> ((Number) o).intValue())
+                    .map(id -> cuadrillaRepository.findById(id).orElse(null))
+                    .filter(c -> c != null)
+                    .collect(Collectors.toList());
+        } else {
+            if (admin.getMunicipio() == null) {
+                return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
+            }
+            cuadrillas = cuadrillaRepository.findIdsByEstadoAndMunicipio(estado, admin.getMunicipio().getIdMunicipio()).stream()
+                    .map(o -> ((Number) o).intValue())
+                    .map(id -> cuadrillaRepository.findById(id).orElse(null))
+                    .filter(c -> c != null)
+                    .collect(Collectors.toList());
+        }
 
         List<CuadrillaResponse> response = cuadrillas.stream().map(c -> {
             List<miembrosCuadrilla> miembros = miembrosCuadrillaRepository

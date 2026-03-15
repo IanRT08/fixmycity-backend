@@ -180,12 +180,16 @@ public class ReporteService {
                                            String fechaInicio, String fechaFin,
                                            String keyword, int idAdmin) {
         Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
-        if (adminOpt.isEmpty() || adminOpt.get().getMunicipio() == null) {
-            return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
+        if (adminOpt.isEmpty()) {
+            return new ApiResponse(false, "Administrador no encontrado");
         }
-        int idMunicipioAdmin = adminOpt.get().getMunicipio().getIdMunicipio();
+        Usuario admin = adminOpt.get();
+        Integer idMunicipioFiltro = admin.getTipo().equals("superadmin")
+                ? null
+                : (admin.getMunicipio() != null ? admin.getMunicipio().getIdMunicipio() : null);
+
         List<Reporte> reportes = reporteRepository.findIdsWithFilters(
-                estado, idMunicipioAdmin, fechaInicio, fechaFin, keyword).stream()
+                estado, idMunicipioFiltro, fechaInicio, fechaFin, keyword).stream()
                 .map(o -> ((Number) o).intValue())
                 .map(id -> reporteRepository.findById(id).orElse(null))
                 .filter(r -> r != null)

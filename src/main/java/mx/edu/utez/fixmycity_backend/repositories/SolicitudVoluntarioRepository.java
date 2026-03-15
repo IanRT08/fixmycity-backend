@@ -23,6 +23,13 @@ public interface SolicitudVoluntarioRepository extends JpaRepository<solicitudVo
             nativeQuery = true)
     Optional<Object> findPendingIdByUsuario(@Param("idUsuario") int idUsuario);
 
+    //Modulo 1.3 - Listar todas las solicitudes pendientes sin filtro de municipio (superadmin)
+    @Query(value = "SELECT s.idSolicitud " +
+            "FROM solicitudVoluntario s " +
+            "WHERE s.estado = :estado",
+            nativeQuery = true)
+    List<Object> findIdsByEstado(@Param("estado") String estado);
+
     //Modulo 1.3 - Listar solicitudes pendientes filtradas por municipio del admin
     @Query(value = "SELECT s.idSolicitud " +
             "FROM solicitudVoluntario s " +

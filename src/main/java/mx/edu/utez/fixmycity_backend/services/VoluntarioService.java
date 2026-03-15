@@ -68,11 +68,28 @@ public class VoluntarioService {
 
     public ApiResponse listarSolicitudesPendientes(int idAdmin) {
         Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
-        if (adminOpt.isEmpty() || adminOpt.get().getMunicipio() == null) {
-            return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
+        if (adminOpt.isEmpty()) {
+            return new ApiResponse(false, "Administrador no encontrado");
         }
-        int idMunicipio = adminOpt.get().getMunicipio().getIdMunicipio();
-        List<solicitudVoluntario> solicitudes = solicitudRepository.findIdsByEstadoAndMunicipio("pendiente", idMunicipio).stream()
+        Usuario admin = adminOpt.get();
+
+        List<solicitudVoluntario> solicitudes;
+        if (admin.getTipo().equals("superadmin")) {
+            solicitudes = solicitudRepository.findIdsByEstado("pendiente").stream()
+                    .map(o -> ((Number) o).intValue())
+                    .map(id -> solicitudRepository.findById(id).orElse(null))
+                    .filter(s -> s != null)
+                    .collect(Collectors.toList());
+        } else {
+            if (admin.getMunicipio() == null) {
+                return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
+            }
+            solicitudes = solicitudRepository.findIdsByEstadoAndMunicipio("pendiente", admin.getMunicipio().getIdMunicipio()).stream()
+                    .map(o -> ((Number) o).intValue())
+                    .map(id -> solicitudRepository.findById(id).orElse(null))
+                    .filter(s -> s != null)
+                    .collect(Collectors.toList());
+        }
                 .map(o -> ((Number) o).intValue())
                 .map(id -> solicitudRepository.findById(id).orElse(null))
                 .filter(s -> s != null)

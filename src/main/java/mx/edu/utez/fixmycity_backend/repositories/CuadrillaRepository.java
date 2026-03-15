@@ -35,6 +35,13 @@ public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
             nativeQuery = true)
     List<Object> findAvailableIdsByMunicipio(@Param("idMunicipio") int idMunicipio);
 
+    //Modulo 3.1 - Listar todas las cuadrillas sin filtro de municipio (superadmin)
+    @Query(value = "SELECT c.idCuadrilla " +
+            "FROM cuadrilla c " +
+            "WHERE c.estado = :estado",
+            nativeQuery = true)
+    List<Object> findIdsByEstado(@Param("estado") String estado);
+
     //Modulo 3.1 - Listar todas las cuadrillas para el panel de administracion filtradas por municipio
     @Query(value = "SELECT c.idCuadrilla " +
             "FROM cuadrilla c " +
