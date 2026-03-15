@@ -49,7 +49,13 @@ public class VoluntarioController {
     @GetMapping("/api/admin/users/volunteer-requests")
     public ResponseEntity<ApiResponse> listarSolicitudes() {
 
-        ApiResponse response = voluntarioService.listarSolicitudesPendientes();
+        int idAdmin = getIdUsuarioAutenticado();
+        if (idAdmin == -1) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Usuario no autenticado"));
+        }
+
+        ApiResponse response = voluntarioService.listarSolicitudesPendientes(idAdmin);
         return ResponseEntity.ok(response);
     }
 

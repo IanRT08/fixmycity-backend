@@ -77,8 +77,13 @@ public class CuadrillaService {
         return new ApiResponse(true, "Cuadrilla creada correctamente");
     }
 
-    public ApiResponse listarCuadrillas(String estado) {
-        List<Cuadrilla> cuadrillas = cuadrillaRepository.findIdsByEstado(estado).stream()
+    public ApiResponse listarCuadrillas(String estado, int idAdmin) {
+        Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
+        if (adminOpt.isEmpty() || adminOpt.get().getMunicipio() == null) {
+            return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
+        }
+        int idMunicipio = adminOpt.get().getMunicipio().getIdMunicipio();
+        List<Cuadrilla> cuadrillas = cuadrillaRepository.findIdsByEstadoAndMunicipio(estado, idMunicipio).stream()
                 .map(o -> ((Number) o).intValue())
                 .map(id -> cuadrillaRepository.findById(id).orElse(null))
                 .filter(c -> c != null)

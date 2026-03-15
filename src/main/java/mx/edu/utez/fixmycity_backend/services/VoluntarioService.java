@@ -66,8 +66,13 @@ public class VoluntarioService {
         return new ApiResponse(true, "Solicitud enviada correctamente");
     }
 
-    public ApiResponse listarSolicitudesPendientes() {
-        List<solicitudVoluntario> solicitudes = solicitudRepository.findIdsByEstado("pendiente").stream()
+    public ApiResponse listarSolicitudesPendientes(int idAdmin) {
+        Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
+        if (adminOpt.isEmpty() || adminOpt.get().getMunicipio() == null) {
+            return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
+        }
+        int idMunicipio = adminOpt.get().getMunicipio().getIdMunicipio();
+        List<solicitudVoluntario> solicitudes = solicitudRepository.findIdsByEstadoAndMunicipio("pendiente", idMunicipio).stream()
                 .map(o -> ((Number) o).intValue())
                 .map(id -> solicitudRepository.findById(id).orElse(null))
                 .filter(s -> s != null)

@@ -177,9 +177,15 @@ public class ReporteService {
     }
 
     public ApiResponse listarReportesAdmin(String estado, Integer idMunicipio,
-                                           String fechaInicio, String fechaFin, String keyword) {
+                                           String fechaInicio, String fechaFin,
+                                           String keyword, int idAdmin) {
+        Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
+        if (adminOpt.isEmpty() || adminOpt.get().getMunicipio() == null) {
+            return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
+        }
+        int idMunicipioAdmin = adminOpt.get().getMunicipio().getIdMunicipio();
         List<Reporte> reportes = reporteRepository.findIdsWithFilters(
-                estado, idMunicipio, fechaInicio, fechaFin, keyword).stream()
+                estado, idMunicipioAdmin, fechaInicio, fechaFin, keyword).stream()
                 .map(o -> ((Number) o).intValue())
                 .map(id -> reporteRepository.findById(id).orElse(null))
                 .filter(r -> r != null)

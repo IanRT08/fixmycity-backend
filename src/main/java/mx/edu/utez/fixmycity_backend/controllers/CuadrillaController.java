@@ -47,7 +47,13 @@ public class CuadrillaController {
     public ResponseEntity<ApiResponse> listarCuadrillas(
             @RequestParam(defaultValue = "activa") String estado) {
 
-        ApiResponse response = cuadrillaService.listarCuadrillas(estado);
+        int idAdmin = getIdUsuarioAutenticado();
+        if (idAdmin == -1) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Usuario no autenticado"));
+        }
+
+        ApiResponse response = cuadrillaService.listarCuadrillas(estado, idAdmin);
         return ResponseEntity.ok(response);
     }
 

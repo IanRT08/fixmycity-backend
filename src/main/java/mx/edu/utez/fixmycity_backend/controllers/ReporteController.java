@@ -113,8 +113,14 @@ public class ReporteController {
             @RequestParam(required = false) String fechaFin,
             @RequestParam(required = false) String keyword) {
 
+        int idAdmin = getIdUsuarioAutenticado();
+        if (idAdmin == -1) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Usuario no autenticado"));
+        }
+
         ApiResponse response = reporteService.listarReportesAdmin(
-                estado, idMunicipio, fechaInicio, fechaFin, keyword);
+                estado, idMunicipio, fechaInicio, fechaFin, keyword, idAdmin);
         return ResponseEntity.ok(response);
     }
 
