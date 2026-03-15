@@ -71,12 +71,29 @@ public class UsuarioService {
         return new ApiResponse(true, "Estado del usuario actualizado correctamente");
     }
 
-    public ApiResponse listarPorTipo(String tipo) {
-        List<Usuario> usuarios = usuarioRepository.buscarIdsPorTipo(tipo).stream()
-                .map(o -> ((Number) o).intValue())
-                .map(id -> usuarioRepository.findById(id).orElse(null))
-                .filter(u -> u != null)
-                .collect(Collectors.toList());
+    public ApiResponse listarPorTipo(String tipo, int idAdmin) {
+        Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
+        if (adminOpt.isEmpty()) {
+            return new ApiResponse(false, "Administrador no encontrado");
+        }
+
+        String tipoAdmin = adminOpt.get().getTipo();
+        List<Usuario> usuarios;
+
+        if (tipoAdmin.equals("superadmin") || adminOpt.get().getMunicipio() == null) {
+            usuarios = usuarioRepository.buscarIdsPorTipo(tipo).stream()
+                    .map(o -> ((Number) o).intValue())
+                    .map(id -> usuarioRepository.findById(id).orElse(null))
+                    .filter(u -> u != null)
+                    .collect(Collectors.toList());
+        } else {
+            int idMunicipio = adminOpt.get().getMunicipio().getIdMunicipio();
+            usuarios = usuarioRepository.buscarIdsPorTipoYMunicipio(tipo, idMunicipio).stream()
+                    .map(o -> ((Number) o).intValue())
+                    .map(id -> usuarioRepository.findById(id).orElse(null))
+                    .filter(u -> u != null)
+                    .collect(Collectors.toList());
+        }
 
         List<UsuarioResponse> response = usuarios.stream()
                 .map(u -> new UsuarioResponse(

@@ -43,6 +43,13 @@ public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
             nativeQuery = true)
     List<Object> findIdsByEstadoAndMunicipio(@Param("estado") String estado, @Param("idMunicipio") int idMunicipio);
 
+    //Dashboard - Listar cuadrillas por estado (global)
+    @Query(value = "SELECT c.idCuadrilla " +
+            "FROM cuadrilla c " +
+            "WHERE c.estado = :estado",
+            nativeQuery = true)
+    List<Object> findIdsByEstado(@Param("estado") String estado);
+
     //Modulo 3.1 - Cambiar el estado de una cuadrilla
     @Modifying
     @Transactional

@@ -33,6 +33,13 @@ public interface SolicitudVoluntarioRepository extends JpaRepository<solicitudVo
             nativeQuery = true)
     List<Object> findIdsByEstadoAndMunicipio(@Param("estado") String estado, @Param("idMunicipio") int idMunicipio);
 
+    //Dashboard - Listar solicitudes por estado (global)
+    @Query(value = "SELECT s.idSolicitud " +
+            "FROM solicitudVoluntario s " +
+            "WHERE s.estado = :estado",
+            nativeQuery = true)
+    List<Object> findIdsByEstado(@Param("estado") String estado);
+
     //Modulo 1.3 - Aprobar o rechazar una solicitud de voluntario
     @Modifying
     @Transactional

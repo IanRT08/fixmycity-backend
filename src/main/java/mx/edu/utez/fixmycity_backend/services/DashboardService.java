@@ -15,9 +15,6 @@ public class DashboardService {
     private ReporteRepository reporteRepository;
 
     @Autowired
-    private detallesReporteRepository detallesReporteRepository;
-
-    @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Autowired

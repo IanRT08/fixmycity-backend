@@ -35,6 +35,13 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
             nativeQuery = true)
     Optional<Object> buscarIdPorCorreo(@Param("correo") String correo);
 
+    //Modulo 1.4 - Listar usuarios por tipo y municipio (para admin)
+    @Query(value = "SELECT u.idUsuario FROM usuario u " +
+            "INNER JOIN municipios m ON u.idMunicipio = m.idMunicipio " +
+            "WHERE u.tipo = :tipo AND u.idMunicipio = :idMunicipio",
+            nativeQuery = true)
+    List<Object> buscarIdsPorTipoYMunicipio(@Param("tipo") String tipo, @Param("idMunicipio") int idMunicipio);
+
     //Modulo 1.4 - Listar todos los usuarios por tipo de rol (ciudadano, voluntario, admin)
     @Query(value = "SELECT u.idUsuario FROM usuario u " +
             "INNER JOIN municipios m ON u.idMunicipio = m.idMunicipio " +
