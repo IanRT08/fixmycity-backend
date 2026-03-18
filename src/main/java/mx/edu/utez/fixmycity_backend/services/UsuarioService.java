@@ -4,8 +4,10 @@ import mx.edu.utez.fixmycity_backend.dto.request.RegistroAdminRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.dto.response.UsuarioResponse;
 import mx.edu.utez.fixmycity_backend.modelos.Administradores;
+import mx.edu.utez.fixmycity_backend.modelos.Municipios;
 import mx.edu.utez.fixmycity_backend.modelos.Usuario;
 import mx.edu.utez.fixmycity_backend.repositories.AdministradoresRepository;
+import mx.edu.utez.fixmycity_backend.repositories.MunicipioRepository;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +28,9 @@ public class UsuarioService {
     private AdministradoresRepository administradorRepository;
 
     @Autowired
+    private MunicipioRepository municipioRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -44,10 +49,17 @@ public class UsuarioService {
             return new ApiResponse(false, "El correo ya está registrado");
         }
 
+        Optional<Municipios> municipioOpt = municipioRepository.findById(request.getIdMunicipio());
+        if (municipioOpt.isEmpty()) {
+            return new ApiResponse(false, "El municipio seleccionado no existe");
+        }
+
         Usuario usuario = new Usuario();
         usuario.setNombreUsuario(request.getNombreUsuario());
         usuario.setCorreo(request.getCorreo());
         usuario.setContrasenia(passwordEncoder.encode(request.getContrasenia()));
+        usuario.setFechaNacimiento(request.getFechaNacimiento());
+        usuario.setMunicipio(municipioOpt.get());
         usuario.setTipo("admin");
         usuario.setEstado("activo");
         usuarioRepository.save(usuario);

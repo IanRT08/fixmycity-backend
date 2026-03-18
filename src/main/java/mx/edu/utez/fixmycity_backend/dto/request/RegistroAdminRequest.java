@@ -1,5 +1,6 @@
 package mx.edu.utez.fixmycity_backend.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 
 import java.util.Date;
@@ -24,6 +25,7 @@ public class RegistroAdminRequest {
 
     @NotNull(message = "La fecha de nacimiento es obligatoria")
     @Past(message = "La fecha de nacimiento debe ser una fecha pasada")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date fechaNacimiento;
 
     @NotNull(message = "Seleccione un municipio")
