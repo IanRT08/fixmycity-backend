@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -298,6 +299,9 @@ public class ReporteService {
     private ReporteResponse mapearReporte(Reporte r) {
         detallesReporte detalles = detallesReporteRepository
                 .findByReporte(r.getIdReporte()).orElse(null);
+        List<String> fotos = fotosReporteRepository.findByReporte(r.getIdReporte()).stream()
+                .map(f -> new String(f.getFoto(), StandardCharsets.UTF_8))
+                .collect(Collectors.toList());
         return new ReporteResponse(
                 r.getIdReporte(),
                 r.getTitulo(),
@@ -305,7 +309,8 @@ public class ReporteService {
                 detalles != null ? detalles.getEstado() : null,
                 detalles != null ? detalles.getMunicipios().getNombre() : null,
                 detalles != null ? detalles.getFechaRegistro() : null,
-                r.getUsuario().getNombreUsuario()
+                r.getUsuario().getNombreUsuario(),
+                fotos
         );
     }
 
