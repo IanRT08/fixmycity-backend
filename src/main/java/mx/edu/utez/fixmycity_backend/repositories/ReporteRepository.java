@@ -50,6 +50,26 @@ public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
             @Param("fechaFin") String fechaFin,
             @Param("keyword") String keyword);
 
+    //Dashboard - Conteo de reportes creados hoy por municipio
+    @Query(value = "SELECT COUNT(r.idReporte) " +
+            "FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "WHERE TRUNC(dr.fechaRegistro) = TRUNC(SYSDATE) " +
+            "AND (:idMunicipio IS NULL OR dr.idMunicipio = :idMunicipio)",
+            nativeQuery = true)
+    int countReportesHoy(@Param("idMunicipio") Integer idMunicipio);
+
+    //Dashboard - Reportes activos agrupados por municipio (superadmin)
+    @Query(value = "SELECT m.nombre AS municipio, COUNT(r.idReporte) AS count " +
+            "FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "INNER JOIN municipios m ON dr.idMunicipio = m.idMunicipio " +
+            "WHERE dr.estado IN ('Pendiente', 'Asignado', 'En camino', 'En curso') " +
+            "GROUP BY m.nombre " +
+            "ORDER BY count DESC",
+            nativeQuery = true)
+    List<Object[]> countReportesActivosPorMunicipio();
+
     //Modulo 13 - Feed publico de reportes del municipio del ciudadano
     @Query(value = "SELECT r.idReporte " +
             "FROM reporte r " +

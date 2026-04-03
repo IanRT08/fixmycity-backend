@@ -6,12 +6,14 @@ public class LoginResponse {
     private String nombreUsuario;
     private String tipo;
     private String municipio;
+    private int idMunicipio;
 
-    public LoginResponse(String token, String nombreUsuario, String tipo, String municipio) {
+    public LoginResponse(String token, String nombreUsuario, String tipo, String municipio, int idMunicipio) {
         this.token = token;
         this.nombreUsuario = nombreUsuario;
         this.tipo = tipo;
         this.municipio = municipio;
+        this.idMunicipio = idMunicipio;
     }
 
     public String getToken() {
@@ -40,5 +42,12 @@ public class LoginResponse {
     }
     public void setMunicipio(String municipio) {
         this.municipio = municipio;
+    }
+
+    public int getIdMunicipio() {
+        return idMunicipio;
+    }
+    public void setIdMunicipio(int idMunicipio) {
+        this.idMunicipio = idMunicipio;
     }
 }

@@ -11,6 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -81,7 +86,7 @@ public class ReporteService {
             for (MultipartFile foto : fotos) {
                 fotosReporte fotoReporte = new fotosReporte();
                 fotoReporte.setReporte(reporte);
-                fotoReporte.setFoto(Base64.getEncoder().encodeToString(foto.getBytes()).getBytes());
+                fotoReporte.setFoto(comprimirImagen(foto.getBytes()));
                 fotosReporteRepository.save(fotoReporte);
             }
         }
@@ -104,10 +109,22 @@ public class ReporteService {
         if (reporteOpt.isEmpty()) {
             return new ApiResponse(false, "Reporte no encontrado");
         }
-        if (reporteOpt.get().getUsuario().getIdUsuario() != idUsuario) {
+        Reporte reporte = reporteOpt.get();
+        if (reporte.getUsuario().getIdUsuario() != idUsuario) {
             return new ApiResponse(false, "No tienes permiso para ver este reporte");
         }
-        return new ApiResponse(true, "Reporte obtenido correctamente", mapearReporte(reporteOpt.get()));
+        detallesReporte detalles = detallesReporteRepository.findByReporte(idReporte).orElse(null);
+        List<String> fotos = fotosReporteRepository.findByReporte(idReporte).stream()
+                .map(f -> Base64.getEncoder().encodeToString(f.getFoto()))
+                .collect(Collectors.toList());
+        return new ApiResponse(true, "Reporte obtenido correctamente", new ReporteResponse(
+                reporte.getIdReporte(), reporte.getTitulo(),
+                detalles != null ? detalles.getDescripcion() : null,
+                detalles != null ? detalles.getEstado() : null,
+                detalles != null ? detalles.getMunicipios().getNombre() : null,
+                detalles != null ? detalles.getFechaRegistro() : null,
+                reporte.getUsuario().getNombreUsuario(), fotos
+        ));
     }
 
     @Transactional
@@ -200,7 +217,7 @@ public class ReporteService {
         Reporte reporte = reporteOpt.get();
         detallesReporte detalles = detallesReporteRepository.findByReporte(idReporte).orElse(null);
         List<String> fotos = fotosReporteRepository.findByReporte(idReporte).stream()
-                .map(f -> new String(f.getFoto(), java.nio.charset.StandardCharsets.UTF_8))
+                .map(f -> Base64.getEncoder().encodeToString(f.getFoto()))
                 .collect(Collectors.toList());
 
         ReporteResponse response = new ReporteResponse(
@@ -299,9 +316,9 @@ public class ReporteService {
     private ReporteResponse mapearReporte(Reporte r) {
         detallesReporte detalles = detallesReporteRepository
                 .findByReporte(r.getIdReporte()).orElse(null);
-        List<String> fotos = fotosReporteRepository.findByReporte(r.getIdReporte()).stream()
-                .map(f -> new String(f.getFoto(), StandardCharsets.UTF_8))
-                .collect(Collectors.toList());
+        List<String> fotos = fotosReporteRepository.findFirstByReporte(r.getIdReporte())
+                .map(f -> List.of(Base64.getEncoder().encodeToString(f.getFoto())))
+                .orElse(List.of());
         return new ReporteResponse(
                 r.getIdReporte(),
                 r.getTitulo(),
@@ -316,5 +333,25 @@ public class ReporteService {
 
     private List<ReporteResponse> mapearReportes(List<Reporte> reportes) {
         return reportes.stream().map(this::mapearReporte).collect(Collectors.toList());
+    }
+
+    private byte[] comprimirImagen(byte[] original) throws IOException {
+        BufferedImage img = ImageIO.read(new ByteArrayInputStream(original));
+        if (img == null) return original;
+
+        int maxDim = 1024;
+        int w = img.getWidth(), h = img.getHeight();
+        if (w > maxDim || h > maxDim) {
+            double scale = Math.min((double) maxDim / w, (double) maxDim / h);
+            int nw = (int) (w * scale), nh = (int) (h * scale);
+            BufferedImage resized = new BufferedImage(nw, nh, BufferedImage.TYPE_INT_RGB);
+            resized.createGraphics().drawImage(img.getScaledInstance(nw, nh, Image.SCALE_SMOOTH), 0, 0, null);
+            img = resized;
+        }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(img, "jpg", out);
+        byte[] compressed = out.toByteArray();
+        return compressed.length < original.length ? compressed : original;
     }
 }

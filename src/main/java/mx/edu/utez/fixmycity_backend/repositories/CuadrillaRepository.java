@@ -50,6 +50,38 @@ public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
             nativeQuery = true)
     List<Object> findIdsByEstadoAndMunicipio(@Param("estado") String estado, @Param("idMunicipio") int idMunicipio);
 
+    //Dashboard - Conteo de cuadrillas libres (activas sin reporte en proceso) por municipio
+    @Query(value = "SELECT COUNT(c.idCuadrilla) " +
+            "FROM cuadrilla c " +
+            "WHERE c.estado = 'activa' " +
+            "AND (:idMunicipio IS NULL OR c.idMunicipio = :idMunicipio) " +
+            "AND NOT EXISTS (" +
+            "   SELECT 1 FROM reporteAsignadoCuadrilla rac " +
+            "   INNER JOIN detallesReporte dr ON rac.idReporte = dr.idReporte " +
+            "   WHERE rac.idCuadrilla = c.idCuadrilla " +
+            "   AND dr.estado IN ('Asignado', 'En camino', 'En curso'))",
+            nativeQuery = true)
+    int countCuadrillasLibres(@Param("idMunicipio") Integer idMunicipio);
+
+    //Dashboard - Conteo de cuadrillas asignadas (con reporte en proceso) por municipio
+    @Query(value = "SELECT COUNT(DISTINCT c.idCuadrilla) " +
+            "FROM cuadrilla c " +
+            "INNER JOIN reporteAsignadoCuadrilla rac ON c.idCuadrilla = rac.idCuadrilla " +
+            "INNER JOIN detallesReporte dr ON rac.idReporte = dr.idReporte " +
+            "WHERE c.estado = 'activa' " +
+            "AND (:idMunicipio IS NULL OR c.idMunicipio = :idMunicipio) " +
+            "AND dr.estado IN ('Asignado', 'En camino', 'En curso')",
+            nativeQuery = true)
+    int countCuadrillasAsignadas(@Param("idMunicipio") Integer idMunicipio);
+
+    //Dashboard - Conteo total de cuadrillas activas por municipio
+    @Query(value = "SELECT COUNT(c.idCuadrilla) " +
+            "FROM cuadrilla c " +
+            "WHERE c.estado = 'activa' " +
+            "AND (:idMunicipio IS NULL OR c.idMunicipio = :idMunicipio)",
+            nativeQuery = true)
+    int countCuadrillasActivas(@Param("idMunicipio") Integer idMunicipio);
+
 //Modulo 3.1 - Cambiar el estado de una cuadrilla
     @Modifying
     @Transactional

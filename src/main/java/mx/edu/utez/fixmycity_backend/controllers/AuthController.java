@@ -59,7 +59,8 @@ public class AuthController {
         if (usuarioOpt.isPresent()) {
             String token = jwtUtils.generateToken(
                     usuarioOpt.get().getNombreUsuario(),
-                    usuarioOpt.get().getTipo()
+                    usuarioOpt.get().getTipo(),
+                    usuarioOpt.get().getMunicipio() != null ? usuarioOpt.get().getMunicipio().getIdMunicipio() : -1
             );
             loginData.setToken(token);
         }

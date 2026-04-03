@@ -92,7 +92,8 @@ public class AuthService {
                 null,
                 usuario.getNombreUsuario(),
                 usuario.getTipo(),
-                usuario.getMunicipio() != null ? usuario.getMunicipio().getNombre() : null
+                usuario.getMunicipio() != null ? usuario.getMunicipio().getNombre() : null,
+                usuario.getMunicipio() != null ? usuario.getMunicipio().getIdMunicipio() : -1
         );
 
         return new ApiResponse(true, "Inicio de sesión exitoso", response);
