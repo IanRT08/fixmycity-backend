@@ -3,7 +3,7 @@ package mx.edu.utez.fixmycity_backend.modelos;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "administradores")
+@Table(name = "ADMINISTADORES")
 public class Administradores {
 
     @Id

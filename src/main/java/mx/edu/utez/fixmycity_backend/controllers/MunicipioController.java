@@ -1,6 +1,7 @@
 package mx.edu.utez.fixmycity_backend.controllers;
 
 import mx.edu.utez.fixmycity_backend.dto.request.MunicipioEstadoRequest;
+import mx.edu.utez.fixmycity_backend.dto.request.MunicipioRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.services.MunicipioService;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,25 @@ public class MunicipioController {
 
     public MunicipioController(MunicipioService municipioService) {
         this.municipioService = municipioService;
+    }
+
+    @PostMapping("/api/zones")
+    public ResponseEntity<ApiResponse> crearMunicipio(
+            @RequestBody @Valid MunicipioRequest request) {
+
+        ApiResponse response = municipioService.crearMunicipio(request);
+        HttpStatus status = response.isSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @PutMapping("/api/zones/{id}")
+    public ResponseEntity<ApiResponse> editarMunicipio(
+            @PathVariable int id,
+            @RequestBody @Valid MunicipioRequest request) {
+
+        ApiResponse response = municipioService.editarMunicipio(id, request);
+        HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(response);
     }
 
     @GetMapping("/api/zones/active")

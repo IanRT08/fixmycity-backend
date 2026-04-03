@@ -28,6 +28,13 @@ public interface MunicipioRepository extends JpaRepository<Municipios, Integer> 
             nativeQuery = true)
     List<Municipios> findByEstado(@Param("estado") String estado);
 
+    //Modulo 6.1 - Actualizar nombre de un municipio
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE municipios SET nombre = :nombre WHERE idMunicipio = :id",
+            nativeQuery = true)
+    void updateNombre(@Param("id") int id, @Param("nombre") String nombre);
+
     //Modulo 6.1 - Habilitar o deshabilitar un municipio (solo si no tiene reportes en proceso)
     @Modifying
     @Transactional
