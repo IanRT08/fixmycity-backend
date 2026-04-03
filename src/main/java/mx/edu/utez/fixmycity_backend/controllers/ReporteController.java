@@ -46,7 +46,9 @@ public class ReporteController {
     }
 
     @GetMapping("/api/reports")
-    public ResponseEntity<ApiResponse> obtenerMisReportes() {
+    public ResponseEntity<ApiResponse> obtenerMisReportes(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
 
         int idUsuario = getIdUsuarioAutenticado();
         if (idUsuario == -1) {
@@ -54,7 +56,7 @@ public class ReporteController {
                     .body(new ApiResponse(false, "Usuario no autenticado"));
         }
 
-        ApiResponse response = reporteService.obtenerMisReportes(idUsuario);
+        ApiResponse response = reporteService.obtenerMisReportes(idUsuario, page, size);
         return ResponseEntity.ok(response);
     }
 
@@ -156,9 +158,11 @@ public class ReporteController {
 
     @GetMapping("/api/feed")
     public ResponseEntity<ApiResponse> obtenerFeed(
-            @RequestParam int idMunicipio) {
+            @RequestParam int idMunicipio,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
 
-        ApiResponse response = reporteService.obtenerFeed(idMunicipio);
+        ApiResponse response = reporteService.obtenerFeed(idMunicipio, page, size);
         return ResponseEntity.ok(response);
     }
 

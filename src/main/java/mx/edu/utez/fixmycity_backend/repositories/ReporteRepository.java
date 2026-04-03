@@ -80,4 +80,46 @@ public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
             "ORDER BY dr.fechaRegistro DESC",
             nativeQuery = true)
     List<Object> findFeedIdsByMunicipio(@Param("idMunicipio") int idMunicipio);
+
+    @Query(value = "SELECT COUNT(r.idReporte) " +
+            "FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "INNER JOIN usuario u ON r.idUsuario = u.idUsuario " +
+            "WHERE dr.idMunicipio = :idMunicipio " +
+            "AND dr.estado NOT IN ('Cancelado')",
+            nativeQuery = true)
+    long countFeedByMunicipio(@Param("idMunicipio") int idMunicipio);
+
+    @Query(value = "SELECT r.idReporte " +
+            "FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "INNER JOIN usuario u ON r.idUsuario = u.idUsuario " +
+            "WHERE dr.idMunicipio = :idMunicipio " +
+            "AND dr.estado NOT IN ('Cancelado') " +
+            "ORDER BY dr.fechaRegistro DESC " +
+            "OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY",
+            nativeQuery = true)
+    List<Object> findFeedIdsByMunicipioPaged(
+            @Param("idMunicipio") int idMunicipio,
+            @Param("offset") int offset,
+            @Param("limit") int limit);
+
+    @Query(value = "SELECT COUNT(r.idReporte) " +
+            "FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "WHERE r.idUsuario = :idUsuario",
+            nativeQuery = true)
+    long countReportesByUsuario(@Param("idUsuario") int idUsuario);
+
+    @Query(value = "SELECT r.idReporte " +
+            "FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "WHERE r.idUsuario = :idUsuario " +
+            "ORDER BY dr.fechaRegistro DESC " +
+            "OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY",
+            nativeQuery = true)
+    List<Object> findIdsByUsuarioPaged(
+            @Param("idUsuario") int idUsuario,
+            @Param("offset") int offset,
+            @Param("limit") int limit);
 }

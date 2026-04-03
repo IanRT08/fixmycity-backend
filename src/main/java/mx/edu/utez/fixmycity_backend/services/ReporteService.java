@@ -3,6 +3,7 @@ package mx.edu.utez.fixmycity_backend.services;
 import mx.edu.utez.fixmycity_backend.dto.request.CancelacionReporteRequest;
 import mx.edu.utez.fixmycity_backend.dto.request.ReporteRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
+import mx.edu.utez.fixmycity_backend.dto.response.ReportePageResponse;
 import mx.edu.utez.fixmycity_backend.dto.response.ReporteResponse;
 import mx.edu.utez.fixmycity_backend.modelos.*;
 import mx.edu.utez.fixmycity_backend.repositories.*;
@@ -26,6 +27,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ReporteService {
+
+    private static final int MAX_PAGE_SIZE = 100;
 
     @Autowired
     private ReporteRepository reporteRepository;
@@ -95,13 +98,26 @@ public class ReporteService {
         return new ApiResponse(true, "Reporte creado correctamente");
     }
 
-    public ApiResponse obtenerMisReportes(int idUsuario) {
-        List<Reporte> reportes = reporteRepository.findIdsByUsuario(idUsuario).stream()
+    public ApiResponse obtenerMisReportes(int idUsuario, Integer page, Integer size) {
+        if (size == null) {
+            List<Reporte> reportes = reporteRepository.findIdsByUsuario(idUsuario).stream()
+                    .map(o -> ((Number) o).intValue())
+                    .map(id -> reporteRepository.findById(id).orElse(null))
+                    .filter(r -> r != null)
+                    .collect(Collectors.toList());
+            return new ApiResponse(true, "Reportes obtenidos correctamente", mapearReportes(reportes));
+        }
+        int p = page != null ? Math.max(0, page) : 0;
+        int s = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        long total = reporteRepository.countReportesByUsuario(idUsuario);
+        List<Reporte> reportes = reporteRepository.findIdsByUsuarioPaged(idUsuario, p * s, s).stream()
                 .map(o -> ((Number) o).intValue())
                 .map(id -> reporteRepository.findById(id).orElse(null))
                 .filter(r -> r != null)
                 .collect(Collectors.toList());
-        return new ApiResponse(true, "Reportes obtenidos correctamente", mapearReportes(reportes));
+        List<ReporteResponse> content = mapearReportes(reportes);
+        ReportePageResponse pageData = toPageResponse(content, total, p, s);
+        return new ApiResponse(true, "Reportes obtenidos correctamente", pageData);
     }
 
     public ApiResponse obtenerReportePorId(int idReporte, int idUsuario) {
@@ -292,13 +308,33 @@ public class ReporteService {
         return new ApiResponse(true, "Reporte rechazado correctamente");
     }
 
-    public ApiResponse obtenerFeed(int idMunicipio) {
-        List<Reporte> reportes = reporteRepository.findFeedIdsByMunicipio(idMunicipio).stream()
+    public ApiResponse obtenerFeed(int idMunicipio, Integer page, Integer size) {
+        if (size == null) {
+            List<Reporte> reportes = reporteRepository.findFeedIdsByMunicipio(idMunicipio).stream()
+                    .map(o -> ((Number) o).intValue())
+                    .map(id -> reporteRepository.findById(id).orElse(null))
+                    .filter(r -> r != null)
+                    .collect(Collectors.toList());
+            return new ApiResponse(true, "Feed obtenido correctamente", mapearReportes(reportes));
+        }
+        int p = page != null ? Math.max(0, page) : 0;
+        int s = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        long total = reporteRepository.countFeedByMunicipio(idMunicipio);
+        List<Reporte> reportes = reporteRepository.findFeedIdsByMunicipioPaged(idMunicipio, p * s, s).stream()
                 .map(o -> ((Number) o).intValue())
                 .map(id -> reporteRepository.findById(id).orElse(null))
                 .filter(r -> r != null)
                 .collect(Collectors.toList());
-        return new ApiResponse(true, "Feed obtenido correctamente", mapearReportes(reportes));
+        List<ReporteResponse> content = mapearReportes(reportes);
+        ReportePageResponse pageData = toPageResponse(content, total, p, s);
+        return new ApiResponse(true, "Feed obtenido correctamente", pageData);
+    }
+
+    private ReportePageResponse toPageResponse(List<ReporteResponse> content, long totalElements,
+                                               int page, int size) {
+        int totalPages = size > 0 ? (int) Math.ceil((double) totalElements / size) : 0;
+        boolean last = totalPages == 0 || page >= totalPages - 1;
+        return new ReportePageResponse(content, totalElements, totalPages, page, size, last);
     }
 
 
