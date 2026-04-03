@@ -8,7 +8,7 @@ import java.util.Date;
     @NamedNativeQuery(
         name = "Usuario.findByNombreUsuarioAndEstado",
         query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
-                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado, u.fotoPerfil " +
                 "FROM usuario u " +
                 "INNER JOIN municipios m ON u.idMunicipio = m.idMunicipio " +
                 "WHERE u.nombreUsuario = :nombreUsuario AND u.estado = :estado",
@@ -17,7 +17,7 @@ import java.util.Date;
     @NamedNativeQuery(
         name = "Usuario.findByNombreUsuario",
         query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
-                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado, u.fotoPerfil " +
                 "FROM usuario u " +
                 "WHERE u.nombreUsuario = :nombreUsuario",
         resultSetMapping = "UsuarioMapping"
@@ -25,7 +25,7 @@ import java.util.Date;
     @NamedNativeQuery(
         name = "Usuario.findByCorreo",
         query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
-                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado, u.fotoPerfil " +
                 "FROM usuario u " +
                 "WHERE u.correo = :correo",
         resultSetMapping = "UsuarioMapping"
@@ -33,7 +33,7 @@ import java.util.Date;
     @NamedNativeQuery(
         name = "Usuario.findByTipo",
         query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
-                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado, u.fotoPerfil " +
                 "FROM usuario u " +
                 "INNER JOIN municipios m ON u.idMunicipio = m.idMunicipio " +
                 "WHERE u.tipo = :tipo",
@@ -42,7 +42,7 @@ import java.util.Date;
     @NamedNativeQuery(
         name = "Usuario.findByEstado",
         query = "SELECT u.idUsuario, u.nombreUsuario, u.correo, u.contrasenia, " +
-                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado " +
+                "u.fechaNacimiento, u.idMunicipio, u.tipo, u.estado, u.fotoPerfil " +
                 "FROM usuario u " +
                 "INNER JOIN municipios m ON u.idMunicipio = m.idMunicipio " +
                 "WHERE u.estado = :estado",
@@ -61,7 +61,8 @@ import java.util.Date;
             @FieldResult(name = "fechaNacimiento", column = "fechaNacimiento"),
             @FieldResult(name = "municipio", column = "idMunicipio"),
             @FieldResult(name = "tipo", column = "tipo"),
-            @FieldResult(name = "estado", column = "estado")
+            @FieldResult(name = "estado", column = "estado"),
+            @FieldResult(name = "fotoPerfil", column = "fotoPerfil")
         }
     )
 )
@@ -94,6 +95,10 @@ public class Usuario {
 
     @Column(name = "estado", nullable = false, length = 10)
     private String estado;
+
+    @Lob
+    @Column(name = "fotoPerfil", columnDefinition = "BLOB")
+    private byte[] fotoPerfil;
 
     public int getIdUsuario() {
         return idUsuario;
@@ -157,5 +162,13 @@ public class Usuario {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public byte[] getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(byte[] fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
     }
 }
