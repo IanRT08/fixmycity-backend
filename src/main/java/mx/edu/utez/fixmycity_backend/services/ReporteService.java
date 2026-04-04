@@ -164,14 +164,32 @@ public class ReporteService {
             return new ApiResponse(false, "Solo puedes editar reportes en estado Pendiente");
         }
 
+        Optional<Municipios> municipioOpt = municipioRepository.findById(request.getIdMunicipio());
+        if (municipioOpt.isEmpty() || !municipioOpt.get().getEstado().equals("Activo")) {
+            return new ApiResponse(false, "El municipio seleccionado no está disponible");
+        }
+
         reporte.setTitulo(request.getTitulo());
         reporteRepository.save(reporte);
 
         detallesReporte detalles = detallesOpt.get();
         detalles.setDescripcion(request.getDescripcion());
+        detalles.setMunicipios(municipioOpt.get());
         detallesReporteRepository.save(detalles);
 
-        return new ApiResponse(true, "Reporte actualizado correctamente");
+        List<String> fotos = fotosReporteRepository.findByReporte(idReporte).stream()
+                .map(f -> Base64.getEncoder().encodeToString(f.getFoto()))
+                .collect(Collectors.toList());
+        ReporteResponse body = new ReporteResponse(
+                reporte.getIdReporte(),
+                reporte.getTitulo(),
+                detalles.getDescripcion(),
+                detalles.getEstado(),
+                detalles.getMunicipios().getNombre(),
+                detalles.getFechaRegistro(),
+                reporte.getUsuario().getNombreUsuario(),
+                fotos);
+        return new ApiResponse(true, "Reporte actualizado correctamente", body);
     }
 
     @Transactional
