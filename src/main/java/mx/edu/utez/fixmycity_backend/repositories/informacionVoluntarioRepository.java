@@ -13,7 +13,7 @@ public interface informacionVoluntarioRepository extends JpaRepository<informaci
 
     //Modulo 1.3 - Verificar si el CURP ya está registrado en el sistema
     @Query(value = "SELECT iv.idInfo, iv.idSolicitud, iv.nombre, iv.CURP, " +
-            "iv.telefono, iv.idMunicipio, iv.descripcion " +
+            "iv.telefono, iv.descripcion " +
             "FROM informacionVoluntario iv " +
             "WHERE iv.CURP = :curp",
             nativeQuery = true)
@@ -21,7 +21,7 @@ public interface informacionVoluntarioRepository extends JpaRepository<informaci
 
     //Modulo 1.3 - Obtener la informacion completa de una solicitud para revisión del admin
     @Query(value = "SELECT iv.idInfo, iv.idSolicitud, iv.nombre, iv.CURP, " +
-            "iv.telefono, iv.idMunicipio, iv.descripcion " +
+            "iv.telefono, iv.descripcion " +
             "FROM informacionVoluntario iv " +
             "INNER JOIN solicitudVoluntario s ON iv.idSolicitud = s.idSolicitud " +
             "INNER JOIN usuario u ON s.idUsuario = u.idUsuario " +
