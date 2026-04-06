@@ -3,122 +3,79 @@ package mx.edu.utez.fixmycity_backend.controllers;
 import mx.edu.utez.fixmycity_backend.dto.request.CancelacionReporteRequest;
 import mx.edu.utez.fixmycity_backend.dto.request.ReporteRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
-import mx.edu.utez.fixmycity_backend.modelos.Usuario;
-import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
+import mx.edu.utez.fixmycity_backend.security.AuthenticationHelper;
 import mx.edu.utez.fixmycity_backend.services.ReporteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class ReporteController {
 
     private final ReporteService reporteService;
-    private final UsuarioRepository usuarioRepository;
+    private final AuthenticationHelper auth;
 
-    public ReporteController(ReporteService reporteService, UsuarioRepository usuarioRepository) {
+    public ReporteController(ReporteService reporteService, AuthenticationHelper auth) {
         this.reporteService = reporteService;
-        this.usuarioRepository = usuarioRepository;
+        this.auth = auth;
     }
 
     @PostMapping("/api/reports")
     public ResponseEntity<ApiResponse> crearReporte(
             @RequestPart("reporte") @Valid ReporteRequest request,
-            @RequestPart(value = "fotos", required = false) List<MultipartFile> fotos)
-            throws IOException {
-
-        int idUsuario = getIdUsuarioAutenticado();
-        if (idUsuario == -1) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
+            @RequestPart(value = "fotos", required = false) List<MultipartFile> fotos) throws IOException {
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
         ApiResponse response = reporteService.crearReporte(idUsuario, request, fotos);
-        HttpStatus status = response.isSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(response);
     }
 
     @GetMapping("/api/reports")
     public ResponseEntity<ApiResponse> obtenerMisReportes(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {
-
-        int idUsuario = getIdUsuarioAutenticado();
-        if (idUsuario == -1) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
-        ApiResponse response = reporteService.obtenerMisReportes(idUsuario, page, size);
-        return ResponseEntity.ok(response);
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
+        return ResponseEntity.ok(reporteService.obtenerMisReportes(idUsuario, page, size));
     }
 
     @GetMapping("/api/reports/{id}")
     public ResponseEntity<ApiResponse> obtenerReporte(@PathVariable int id) {
-
-        int idUsuario = getIdUsuarioAutenticado();
-        if (idUsuario == -1) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
         ApiResponse response = reporteService.obtenerReportePorId(id, idUsuario);
-        HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(response);
     }
 
     @PutMapping("/api/reports/{id}")
-    public ResponseEntity<ApiResponse> editarReporte(
-            @PathVariable int id,
+    public ResponseEntity<ApiResponse> editarReporte(@PathVariable int id,
             @RequestBody @Valid ReporteRequest request) {
-
-        int idUsuario = getIdUsuarioAutenticado();
-        if (idUsuario == -1) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
         ApiResponse response = reporteService.editarReporte(id, idUsuario, request);
-        HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(response);
     }
 
     @PutMapping("/api/reports/{id}/cancel")
-    public ResponseEntity<ApiResponse> cancelarReporte(
-            @PathVariable int id,
+    public ResponseEntity<ApiResponse> cancelarReporte(@PathVariable int id,
             @RequestBody @Valid CancelacionReporteRequest request) {
-
-        int idUsuario = getIdUsuarioAutenticado();
-        if (idUsuario == -1) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
         ApiResponse response = reporteService.cancelarReporte(id, idUsuario, request);
-        HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(response);
     }
-
 
     @GetMapping("/api/admin/reports/{id}")
     public ResponseEntity<ApiResponse> obtenerDetalleAdmin(@PathVariable int id) {
-
-        int idAdmin = getIdUsuarioAutenticado();
-        if (idAdmin == -1) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
+        int idAdmin = auth.getAuthenticatedUserId();
+        if (idAdmin == -1) return unauthorized();
         ApiResponse response = reporteService.obtenerDetalleAdmin(id, idAdmin);
-        HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(response);
     }
 
     @GetMapping("/api/admin/reports")
@@ -128,32 +85,27 @@ public class ReporteController {
             @RequestParam(required = false) String fechaInicio,
             @RequestParam(required = false) String fechaFin,
             @RequestParam(required = false) String keyword) {
-
-        int idAdmin = getIdUsuarioAutenticado();
-        if (idAdmin == -1) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
-        ApiResponse response = reporteService.listarReportesAdmin(
-                estado, idMunicipio, fechaInicio, fechaFin, keyword, idAdmin);
-        return ResponseEntity.ok(response);
+        int idAdmin = auth.getAuthenticatedUserId();
+        if (idAdmin == -1) return unauthorized();
+        return ResponseEntity.ok(reporteService.listarReportesAdmin(estado, idMunicipio, fechaInicio, fechaFin, keyword, idAdmin));
     }
 
     @PutMapping("/api/admin/reports/{id}/reject")
-    public ResponseEntity<ApiResponse> rechazarReporte(
-            @PathVariable int id,
+    public ResponseEntity<ApiResponse> rechazarReporte(@PathVariable int id,
             @RequestBody @Valid CancelacionReporteRequest request) {
-
-        int idAdmin = getIdUsuarioAutenticado();
-        if (idAdmin == -1) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
+        int idAdmin = auth.getAuthenticatedUserId();
+        if (idAdmin == -1) return unauthorized();
         ApiResponse response = reporteService.rechazarReporte(id, idAdmin, request);
-        HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    // NEW: Marcar duplicado — no requiere body/motivo
+    @PutMapping("/api/admin/reports/{id}/duplicate")
+    public ResponseEntity<ApiResponse> marcarDuplicado(@PathVariable int id) {
+        int idAdmin = auth.getAuthenticatedUserId();
+        if (idAdmin == -1) return unauthorized();
+        ApiResponse response = reporteService.marcarDuplicado(id, idAdmin);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(response);
     }
 
     @GetMapping("/api/feed")
@@ -161,17 +113,15 @@ public class ReporteController {
             @RequestParam int idMunicipio,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {
-
-        ApiResponse response = reporteService.obtenerFeed(idMunicipio, page, size);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(reporteService.obtenerFeed(idMunicipio, page, size));
     }
 
-    private int getIdUsuarioAutenticado() {
-        String nombreUsuario = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        Optional<Usuario> usuarioOpt = usuarioRepository.buscarIdPorNombre(nombreUsuario)
-                .map(o -> ((Number) o).intValue())
-                .flatMap(id -> usuarioRepository.findById(id));
-        return usuarioOpt.map(Usuario::getIdUsuario).orElse(-1);
+    @GetMapping("/api/feed/{id}")
+    public ResponseEntity<ApiResponse> obtenerDetallePublico(@PathVariable int id) {
+        return ResponseEntity.ok(reporteService.obtenerDetallePublico(id));
+    }
+
+    private ResponseEntity<ApiResponse> unauthorized() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "Usuario no autenticado"));
     }
 }

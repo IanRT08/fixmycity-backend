@@ -42,10 +42,11 @@ public class NotificacionesService {
         notificacion.setLeida(false);
         notificacion.setFechaEnvio(Timestamp.from(Instant.now()));
 
-        if (idReporte != null) {
-            Optional<Reporte> reporteOpt = reporteRepository.findById(idReporte);
-            reporteOpt.ifPresent(notificacion::setIdReporte);
-        }
+        if (idReporte == null) return;
+
+        Optional<Reporte> reporteOpt = reporteRepository.findById(idReporte);
+        if (reporteOpt.isEmpty()) return;
+        notificacion.setIdReporte(reporteOpt.get());
 
         notificacionesRepository.save(notificacion);
     }

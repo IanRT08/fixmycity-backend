@@ -2,79 +2,45 @@ package mx.edu.utez.fixmycity_backend.controllers;
 
 import mx.edu.utez.fixmycity_backend.dto.request.SolicitudVoluntarioRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
-import mx.edu.utez.fixmycity_backend.modelos.Usuario;
-import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
+import mx.edu.utez.fixmycity_backend.security.AuthenticationHelper;
 import mx.edu.utez.fixmycity_backend.services.VoluntarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.Optional;
 
 @RestController
 public class VoluntarioController {
 
     private final VoluntarioService voluntarioService;
-    private final UsuarioRepository usuarioRepository;
+    private final AuthenticationHelper auth;
 
-    public VoluntarioController(VoluntarioService voluntarioService, UsuarioRepository usuarioRepository) {
+    public VoluntarioController(VoluntarioService voluntarioService, AuthenticationHelper auth) {
         this.voluntarioService = voluntarioService;
-        this.usuarioRepository = usuarioRepository;
+        this.auth = auth;
     }
 
     @PostMapping("/api/users/volunteer-request")
-    public ResponseEntity<ApiResponse> solicitarVoluntario(
-            @RequestBody @Valid SolicitudVoluntarioRequest request) {
-
-
-        String nombreUsuario = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        Optional<Usuario> usuarioOpt = usuarioRepository.buscarIdPorNombre(nombreUsuario)
-                .map(o -> ((Number) o).intValue())
-                .flatMap(id -> usuarioRepository.findById(id));
-
-        if (usuarioOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
-        ApiResponse response = voluntarioService.solicitarVoluntario(
-                usuarioOpt.get().getIdUsuario(), request);
-        HttpStatus status = response.isSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(response);
+    public ResponseEntity<ApiResponse> solicitarVoluntario(@RequestBody @Valid SolicitudVoluntarioRequest request) {
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "No autenticado"));
+        ApiResponse response = voluntarioService.solicitarVoluntario(idUsuario, request);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(response);
     }
 
     @GetMapping("/api/admin/users/volunteer-requests")
     public ResponseEntity<ApiResponse> listarSolicitudes() {
-
-        int idAdmin = getIdUsuarioAutenticado();
-        if (idAdmin == -1) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Usuario no autenticado"));
-        }
-
-        ApiResponse response = voluntarioService.listarSolicitudesPendientes(idAdmin);
-        return ResponseEntity.ok(response);
-    }
-
-    private int getIdUsuarioAutenticado() {
-        String nombreUsuario = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        Optional<Usuario> usuarioOpt = usuarioRepository.buscarIdPorNombre(nombreUsuario)
-                .map(o -> ((Number) o).intValue())
-                .flatMap(id -> usuarioRepository.findById(id));
-        return usuarioOpt.map(Usuario::getIdUsuario).orElse(-1);
+        int idAdmin = auth.getAuthenticatedUserId();
+        if (idAdmin == -1)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "No autenticado"));
+        return ResponseEntity.ok(voluntarioService.listarSolicitudesPendientes(idAdmin));
     }
 
     @PutMapping("/api/admin/users/volunteer-requests/{id}")
-    public ResponseEntity<ApiResponse> responderSolicitud(
-            @PathVariable int id,
-            @RequestParam String decision) {
-
+    public ResponseEntity<ApiResponse> responderSolicitud(@PathVariable int id, @RequestParam String decision) {
         ApiResponse response = voluntarioService.responderSolicitud(id, decision);
-        HttpStatus status = response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(response);
     }
 }

@@ -11,108 +11,108 @@ import java.util.List;
 @Repository
 public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
 
-    //Modulo 2.2 - Consultar todos los reportes del ciudadano autenticado
-    @Query(value = "SELECT r.idReporte " +
-            "FROM reporte r " +
+    @Query(value = "SELECT r.idReporte FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "WHERE r.idUsuario = :idUsuario",
             nativeQuery = true)
     List<Object> findIdsByUsuario(@Param("idUsuario") int idUsuario);
 
-    //Modulo 2.2 - Filtrar reportes del ciudadano por estado
-    @Query(value = "SELECT r.idReporte " +
-            "FROM reporte r " +
+    @Query(value = "SELECT r.idReporte FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
-            "WHERE r.idUsuario = :idUsuario " +
-            "AND dr.estado = :estado",
+            "WHERE r.idUsuario = :idUsuario AND dr.estado = :estado",
             nativeQuery = true)
     List<Object> findIdsByUsuarioAndEstado(
-            @Param("idUsuario") int idUsuario,
-            @Param("estado") String estado);
+            @Param("idUsuario") int idUsuario, @Param("estado") String estado);
 
-    //Modulo 4.1 - Listar todos los reportes para el panel admin con filtros opcionales
-    @Query(value = "SELECT r.idReporte " +
+    @Query(value = "SELECT r.idReporte, r.titulo, u.nombreUsuario, " +
+            "dr.descripcion, dr.estado, dr.fechaRegistro, m.nombre AS municipio " +
             "FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "INNER JOIN municipios m ON dr.idMunicipio = m.idMunicipio " +
-            "LEFT JOIN reporteAsignadoCuadrilla rac ON r.idReporte = rac.idReporte " +
-            "WHERE (:estado IS NULL OR dr.estado = :estado) " +
-            "AND (:idMunicipio IS NULL OR dr.idMunicipio = :idMunicipio) " +
-            "AND (:fechaInicio IS NULL OR dr.fechaRegistro >= TO_DATE(:fechaInicio, 'YYYY-MM-DD')) " +
-            "AND (:fechaFin IS NULL OR dr.fechaRegistro <= TO_DATE(:fechaFin, 'YYYY-MM-DD')) " +
-            "AND (:keyword IS NULL OR r.titulo LIKE '%' || :keyword || '%' " +
-            "     OR dr.descripcion LIKE '%' || :keyword || '%')",
+            "INNER JOIN usuario u ON r.idUsuario = u.idUsuario " +
+            "WHERE dr.estado = NVL(:estado, dr.estado) " +
+            "AND dr.idMunicipio = NVL(:idMunicipio, dr.idMunicipio) " +
+            "AND dr.fechaRegistro >= NVL(TO_DATE(:fechaInicio, 'YYYY-MM-DD'), dr.fechaRegistro) " +
+            "AND dr.fechaRegistro <= NVL(TO_DATE(:fechaFin, 'YYYY-MM-DD'), dr.fechaRegistro) " +
+            "AND (:keyword IS NULL OR UPPER(r.titulo) LIKE UPPER('%' || :keyword || '%') " +
+            "     OR UPPER(dr.descripcion) LIKE UPPER('%' || :keyword || '%')) " +
+            "ORDER BY dr.fechaRegistro DESC",
             nativeQuery = true)
-    List<Object> findIdsWithFilters(
-            @Param("estado") String estado,
-            @Param("idMunicipio") Integer idMunicipio,
-            @Param("fechaInicio") String fechaInicio,
-            @Param("fechaFin") String fechaFin,
+    List<Object[]> findReportesAdminDirect(
+            @Param("estado") String estado, @Param("idMunicipio") Integer idMunicipio,
+            @Param("fechaInicio") String fechaInicio, @Param("fechaFin") String fechaFin,
             @Param("keyword") String keyword);
 
-    //Dashboard - Conteo de reportes creados hoy por municipio
-    @Query(value = "SELECT COUNT(r.idReporte) " +
-            "FROM reporte r " +
+    @Query(value = "SELECT r.idReporte FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "INNER JOIN municipios m ON dr.idMunicipio = m.idMunicipio " +
+            "WHERE dr.estado = NVL(:estado, dr.estado) " +
+            "AND dr.idMunicipio = NVL(:idMunicipio, dr.idMunicipio) " +
+            "AND dr.fechaRegistro >= NVL(TO_DATE(:fechaInicio, 'YYYY-MM-DD'), dr.fechaRegistro) " +
+            "AND dr.fechaRegistro <= NVL(TO_DATE(:fechaFin, 'YYYY-MM-DD'), dr.fechaRegistro) " +
+            "AND (:keyword IS NULL OR UPPER(r.titulo) LIKE UPPER('%' || :keyword || '%') " +
+            "     OR UPPER(dr.descripcion) LIKE UPPER('%' || :keyword || '%')) " +
+            "ORDER BY dr.fechaRegistro DESC",
+            nativeQuery = true)
+    List<Object> findIdsWithFilters(
+            @Param("estado") String estado, @Param("idMunicipio") Integer idMunicipio,
+            @Param("fechaInicio") String fechaInicio, @Param("fechaFin") String fechaFin,
+            @Param("keyword") String keyword);
+
+    // --- Dashboard COUNT queries (optimized, no N+1) ---
+    @Query(value = "SELECT COUNT(r.idReporte) FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "WHERE dr.estado = :estado " +
+            "AND dr.idMunicipio = NVL(:idMunicipio, dr.idMunicipio)",
+            nativeQuery = true)
+    int countByEstadoAndMunicipio(@Param("estado") String estado, @Param("idMunicipio") Integer idMunicipio);
+
+    @Query(value = "SELECT COUNT(r.idReporte) FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "WHERE TRUNC(dr.fechaRegistro) = TRUNC(SYSDATE) " +
-            "AND (:idMunicipio IS NULL OR dr.idMunicipio = :idMunicipio)",
+            "AND dr.idMunicipio = NVL(:idMunicipio, dr.idMunicipio)",
             nativeQuery = true)
     int countReportesHoy(@Param("idMunicipio") Integer idMunicipio);
 
-    //Dashboard - Reportes activos agrupados por municipio (superadmin)
     @Query(value = "SELECT m.nombre AS municipio, COUNT(r.idReporte) AS count " +
             "FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "INNER JOIN municipios m ON dr.idMunicipio = m.idMunicipio " +
             "WHERE dr.estado IN ('Pendiente', 'Asignado', 'En camino', 'En curso') " +
-            "GROUP BY m.nombre " +
-            "ORDER BY count DESC",
+            "GROUP BY m.nombre ORDER BY count DESC",
             nativeQuery = true)
     List<Object[]> countReportesActivosPorMunicipio();
 
-    //Modulo 13 - Feed publico de reportes del municipio del ciudadano
-    @Query(value = "SELECT r.idReporte " +
-            "FROM reporte r " +
+    @Query(value = "SELECT r.idReporte FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
-            "INNER JOIN usuario u ON r.idUsuario = u.idUsuario " +
-            "WHERE dr.idMunicipio = :idMunicipio " +
-            "AND dr.estado NOT IN ('Cancelado') " +
+            "WHERE dr.idMunicipio = :idMunicipio AND dr.estado NOT IN ('Cancelado') " +
             "ORDER BY dr.fechaRegistro DESC",
             nativeQuery = true)
     List<Object> findFeedIdsByMunicipio(@Param("idMunicipio") int idMunicipio);
 
-    @Query(value = "SELECT COUNT(r.idReporte) " +
-            "FROM reporte r " +
+    @Query(value = "SELECT COUNT(r.idReporte) FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
-            "INNER JOIN usuario u ON r.idUsuario = u.idUsuario " +
-            "WHERE dr.idMunicipio = :idMunicipio " +
-            "AND dr.estado NOT IN ('Cancelado')",
+            "WHERE dr.idMunicipio = :idMunicipio AND dr.estado NOT IN ('Cancelado')",
             nativeQuery = true)
     long countFeedByMunicipio(@Param("idMunicipio") int idMunicipio);
 
-    @Query(value = "SELECT r.idReporte " +
-            "FROM reporte r " +
+    @Query(value = "SELECT r.idReporte FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
-            "INNER JOIN usuario u ON r.idUsuario = u.idUsuario " +
-            "WHERE dr.idMunicipio = :idMunicipio " +
-            "AND dr.estado NOT IN ('Cancelado') " +
+            "WHERE dr.idMunicipio = :idMunicipio AND dr.estado NOT IN ('Cancelado') " +
             "ORDER BY dr.fechaRegistro DESC " +
             "OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY",
             nativeQuery = true)
     List<Object> findFeedIdsByMunicipioPaged(
             @Param("idMunicipio") int idMunicipio,
-            @Param("offset") int offset,
-            @Param("limit") int limit);
+            @Param("offset") int offset, @Param("limit") int limit);
 
-    @Query(value = "SELECT COUNT(r.idReporte) " +
-            "FROM reporte r " +
+    @Query(value = "SELECT COUNT(r.idReporte) FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "WHERE r.idUsuario = :idUsuario",
             nativeQuery = true)
     long countReportesByUsuario(@Param("idUsuario") int idUsuario);
 
-    @Query(value = "SELECT r.idReporte " +
-            "FROM reporte r " +
+    @Query(value = "SELECT r.idReporte FROM reporte r " +
             "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
             "WHERE r.idUsuario = :idUsuario " +
             "ORDER BY dr.fechaRegistro DESC " +
@@ -120,6 +120,24 @@ public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
             nativeQuery = true)
     List<Object> findIdsByUsuarioPaged(
             @Param("idUsuario") int idUsuario,
-            @Param("offset") int offset,
-            @Param("limit") int limit);
+            @Param("offset") int offset, @Param("limit") int limit);
+
+    // Dashboard count: reportes en proceso (Asignado + En camino + En curso)
+    @Query(value = "SELECT COUNT(r.idReporte) FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "WHERE dr.estado IN ('Asignado', 'En camino', 'En curso') " +
+            "AND dr.idMunicipio = NVL(:idMunicipio, dr.idMunicipio)",
+            nativeQuery = true)
+    int countReportesEnProceso(@Param("idMunicipio") Integer idMunicipio);
+
+    // Dashboard count by date range
+    @Query(value = "SELECT COUNT(r.idReporte) FROM reporte r " +
+            "INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "WHERE dr.estado = NVL(:estado, dr.estado) " +
+            "AND dr.fechaRegistro >= TO_DATE(:fechaInicio, 'YYYY-MM-DD') " +
+            "AND dr.fechaRegistro <= TO_DATE(:fechaFin, 'YYYY-MM-DD')",
+            nativeQuery = true)
+    int countByEstadoAndFecha(@Param("estado") String estado,
+                              @Param("fechaInicio") String fechaInicio,
+                              @Param("fechaFin") String fechaFin);
 }

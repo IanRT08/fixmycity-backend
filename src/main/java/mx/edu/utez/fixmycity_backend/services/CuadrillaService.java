@@ -9,54 +9,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class CuadrillaService {
 
-    @Autowired
-    private CuadrillaRepository cuadrillaRepository;
-
-    @Autowired
-    private miembrosCuadrillaRepository miembrosCuadrillaRepository;
-
-    @Autowired
-    private VoluntarioRepository voluntarioRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private MunicipioRepository municipioRepository;
+    @Autowired private CuadrillaRepository cuadrillaRepository;
+    @Autowired private miembrosCuadrillaRepository miembrosCuadrillaRepository;
+    @Autowired private VoluntarioRepository voluntarioRepository;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private MunicipioRepository municipioRepository;
 
     @Transactional
     public ApiResponse crearCuadrilla(CuadrillaRequest request) {
-
-        if (cuadrillaRepository.findIdByNombreCuadrilla(request.getNombreCuadrilla()).isPresent()) {
+        if (cuadrillaRepository.findIdByNombreCuadrilla(request.getNombreCuadrilla()).isPresent())
             return new ApiResponse(false, "Ya existe una cuadrilla con ese nombre");
-        }
-
         Optional<Municipios> municipioOpt = municipioRepository.findById(request.getIdMunicipio());
-        if (municipioOpt.isEmpty() || !municipioOpt.get().getEstado().equals("Activo")) {
+        if (municipioOpt.isEmpty() || !municipioOpt.get().getEstado().equals("Activo"))
             return new ApiResponse(false, "El municipio seleccionado no está disponible");
-        }
-
-        if (!request.getIdMiembros().contains(request.getIdLider())) {
+        if (!request.getIdMiembros().contains(request.getIdLider()))
             return new ApiResponse(false, "El líder debe ser uno de los 5 integrantes");
+        for (Integer idVol : request.getIdMiembros()) {
+            if (voluntarioRepository.findById(idVol).isEmpty())
+                return new ApiResponse(false, "El voluntario con id " + idVol + " no existe");
         }
-
-        for (Integer idVoluntario : request.getIdMiembros()) {
-            if (voluntarioRepository.findById(idVoluntario).isEmpty()) {
-                return new ApiResponse(false, "El voluntario con id " + idVoluntario + " no existe");
-            }
-        }
-
         Optional<Voluntario> liderOpt = voluntarioRepository.findById(request.getIdLider());
-        if (liderOpt.isEmpty()) {
-            return new ApiResponse(false, "El líder seleccionado no es un voluntario válido");
-        }
+        if (liderOpt.isEmpty()) return new ApiResponse(false, "El líder seleccionado no es válido");
 
         Cuadrilla cuadrilla = new Cuadrilla();
         cuadrilla.setNombreCuadrilla(request.getNombreCuadrilla());
@@ -65,85 +44,71 @@ public class CuadrillaService {
         cuadrilla.setEstado("activa");
         cuadrillaRepository.save(cuadrilla);
 
-        for (Integer idVoluntario : request.getIdMiembros()) {
-            Voluntario voluntario = voluntarioRepository.findById(idVoluntario).get();
+        for (Integer idVol : request.getIdMiembros()) {
+            Voluntario voluntario = voluntarioRepository.findById(idVol).get();
             miembrosCuadrilla miembro = new miembrosCuadrilla();
             miembro.setCuadrilla(cuadrilla);
-            miembro.setUsuario(voluntario.getUsuario());
-            miembro.setTipo(idVoluntario.equals(request.getIdLider()) ? "lider" : "miembro");
+            miembro.setVoluntario(voluntario);
+            miembro.setTipo(idVol.equals(request.getIdLider()) ? "lider" : "voluntario");
             miembrosCuadrillaRepository.save(miembro);
         }
-
         return new ApiResponse(true, "Cuadrilla creada correctamente");
     }
 
     public ApiResponse listarCuadrillas(String estado, int idAdmin) {
         Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
-        if (adminOpt.isEmpty()) {
-            return new ApiResponse(false, "Administrador no encontrado");
-        }
+        if (adminOpt.isEmpty()) return new ApiResponse(false, "Administrador no encontrado");
         Usuario admin = adminOpt.get();
 
-        List<Cuadrilla> cuadrillas;
+        List<Object> ids;
         if (admin.getTipo().equals("superadmin")) {
-            cuadrillas = cuadrillaRepository.findIdsByEstado(estado).stream()
-                    .map(o -> ((Number) o).intValue())
-                    .map(id -> cuadrillaRepository.findById(id).orElse(null))
-                    .filter(c -> c != null)
-                    .collect(Collectors.toList());
+            ids = cuadrillaRepository.findIdsByEstado(estado);
         } else {
-            if (admin.getMunicipio() == null) {
+            if (admin.getMunicipio() == null)
                 return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
-            }
-            cuadrillas = cuadrillaRepository.findIdsByEstadoAndMunicipio(estado, admin.getMunicipio().getIdMunicipio()).stream()
-                    .map(o -> ((Number) o).intValue())
-                    .map(id -> cuadrillaRepository.findById(id).orElse(null))
-                    .filter(c -> c != null)
-                    .collect(Collectors.toList());
+            ids = cuadrillaRepository.findIdsByEstadoAndMunicipio(estado, admin.getMunicipio().getIdMunicipio());
         }
 
-        List<CuadrillaResponse> response = cuadrillas.stream().map(c -> {
-            List<miembrosCuadrilla> miembros = miembrosCuadrillaRepository
-                    .findByCuadrilla(c.getIdCuadrilla());
-
-            List<String> nombresMiembros = miembros.stream()
-                    .map(m -> m.getUsuario().getNombreUsuario())
-                    .collect(Collectors.toList());
-
-            return new CuadrillaResponse(
-                    c.getIdCuadrilla(),
-                    c.getNombreCuadrilla(),
-                    c.getIdMunicipio().getNombre(),
-                    c.getVoluntario().getUsuario().getNombreUsuario(),
-                    c.getEstado(),
-                    nombresMiembros
-            );
-        }).collect(Collectors.toList());
+        List<CuadrillaResponse> response = ids.stream()
+                .map(o -> ((Number) o).intValue())
+                .map(id -> cuadrillaRepository.findById(id).orElse(null))
+                .filter(Objects::nonNull)
+                .map(c -> {
+                    List<miembrosCuadrilla> miembros = miembrosCuadrillaRepository.findByCuadrilla(c.getIdCuadrilla());
+                    List<String> nombres = miembros.stream()
+                            .map(m -> m.getVoluntario().getUsuario().getNombreUsuario())
+                            .collect(Collectors.toList());
+                    return new CuadrillaResponse(
+                            c.getIdCuadrilla(), c.getNombreCuadrilla(),
+                            c.getIdMunicipio().getNombre(),
+                            c.getVoluntario().getUsuario().getNombreUsuario(),
+                            c.getEstado(), nombres);
+                }).collect(Collectors.toList());
 
         return new ApiResponse(true, "Cuadrillas obtenidas correctamente", response);
     }
 
+    // Returns list of {idUsuario, nombreUsuario} for voluntarios without active squad
     public ApiResponse listarVoluntariosDisponibles(int idMunicipio) {
-        List<Voluntario> voluntarios = voluntarioRepository.findAvailableIdsByMunicipio(idMunicipio).stream()
+        List<Object> ids = voluntarioRepository.findAvailableIdsByMunicipio(idMunicipio);
+        List<Map<String, Object>> result = ids.stream()
                 .map(o -> ((Number) o).intValue())
                 .map(id -> voluntarioRepository.findById(id).orElse(null))
-                .filter(v -> v != null)
-                .collect(Collectors.toList());
-
-        List<String> nombres = voluntarios.stream()
-                .map(v -> v.getUsuario().getNombreUsuario())
-                .collect(Collectors.toList());
-
-        return new ApiResponse(true, "Voluntarios disponibles obtenidos correctamente", nombres);
+                .filter(Objects::nonNull)
+                .map(v -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("idUsuario", v.getIdVoluntario()); // idVoluntario for squad creation
+                    m.put("nombreUsuario", v.getUsuario().getNombreUsuario());
+                    m.put("tipo", "voluntario");
+                    return m;
+                }).collect(Collectors.toList());
+        return new ApiResponse(true, "Voluntarios disponibles obtenidos correctamente", result);
     }
 
     @Transactional
     public ApiResponse cambiarEstadoCuadrilla(int idCuadrilla, String estado) {
-
-        if (cuadrillaRepository.findById(idCuadrilla).isEmpty()) {
+        if (cuadrillaRepository.findById(idCuadrilla).isEmpty())
             return new ApiResponse(false, "Cuadrilla no encontrada");
-        }
-
         cuadrillaRepository.updateEstado(idCuadrilla, estado);
         return new ApiResponse(true, "Estado de cuadrilla actualizado correctamente");
     }

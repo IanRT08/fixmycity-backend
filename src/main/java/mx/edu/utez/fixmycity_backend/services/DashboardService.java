@@ -26,35 +26,36 @@ public class DashboardService {
         this.solicitudVoluntarioRepository = solicitudVoluntarioRepository;
     }
 
+    // SuperAdmin: all stats without municipality filter
     public ApiResponse obtenerEstadisticas() {
+        return obtenerEstadisticasInternas(null);
+    }
 
-        Map<String, Object> estadisticas = new HashMap<>();
-        estadisticas.put("reportesPendientes",
-                reporteRepository.findIdsWithFilters("Pendiente", null, null, null, null).size());
-        estadisticas.put("reportesAsignados",
-                reporteRepository.findIdsWithFilters("Asignado", null, null, null, null).size());
-        estadisticas.put("reportesEnCamino",
-                reporteRepository.findIdsWithFilters("En camino", null, null, null, null).size());
-        estadisticas.put("reportesEnCurso",
-                reporteRepository.findIdsWithFilters("En curso", null, null, null, null).size());
-        estadisticas.put("reportesFinalizados",
-                reporteRepository.findIdsWithFilters("Finalizado", null, null, null, null).size());
-        estadisticas.put("reportesCancelados",
-                reporteRepository.findIdsWithFilters("Cancelado", null, null, null, null).size());
-        estadisticas.put("reportesRechazados",
-                reporteRepository.findIdsWithFilters("Rechazado", null, null, null, null).size());
-        estadisticas.put("totalCiudadanos",
-                usuarioRepository.buscarIdsPorTipo("ciudadano").size());
-        estadisticas.put("totalVoluntarios",
-                usuarioRepository.buscarIdsPorTipo("voluntario").size());
+    // Admin: stats filtered by municipality
+    public ApiResponse obtenerEstadisticasPorMunicipio(int idMunicipio) {
+        return obtenerEstadisticasInternas(idMunicipio);
+    }
 
-        estadisticas.put("cuadrillasActivas",
-                cuadrillaRepository.findIdsByEstado("activa").size());
+    private ApiResponse obtenerEstadisticasInternas(Integer idMunicipio) {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("reportesPendientes", reporteRepository.countByEstadoAndMunicipio("Pendiente", idMunicipio));
+        stats.put("reportesAsignados", reporteRepository.countByEstadoAndMunicipio("Asignado", idMunicipio));
+        stats.put("reportesEnCamino", reporteRepository.countByEstadoAndMunicipio("En camino", idMunicipio));
+        stats.put("reportesEnCurso", reporteRepository.countByEstadoAndMunicipio("En curso", idMunicipio));
+        stats.put("reportesFinalizados", reporteRepository.countByEstadoAndMunicipio("Finalizado", idMunicipio));
+        stats.put("reportesCancelados", reporteRepository.countByEstadoAndMunicipio("Cancelado", idMunicipio));
+        stats.put("reportesRechazados", reporteRepository.countByEstadoAndMunicipio("Rechazado", idMunicipio));
+        stats.put("reportesDuplicados", reporteRepository.countByEstadoAndMunicipio("Duplicado", idMunicipio));
+        stats.put("reportesEnProceso", reporteRepository.countReportesEnProceso(idMunicipio));
 
-        estadisticas.put("solicitudesPendientes",
-                solicitudVoluntarioRepository.findIdsByEstado("pendiente").size());
+        stats.put("totalCiudadanos", usuarioRepository.buscarIdsPorTipo("ciudadano").size());
+        stats.put("totalVoluntarios", usuarioRepository.buscarIdsPorTipo("voluntario").size());
+        stats.put("cuadrillasActivas", cuadrillaRepository.countCuadrillasActivas(idMunicipio));
+        stats.put("solicitudesPendientes", idMunicipio != null
+                ? solicitudVoluntarioRepository.findIdsByEstadoAndMunicipio("pendiente", idMunicipio).size()
+                : solicitudVoluntarioRepository.findIdsByEstado("pendiente").size());
 
-        return new ApiResponse(true, "Estadísticas obtenidas correctamente", estadisticas);
+        return new ApiResponse(true, "Estadísticas obtenidas correctamente", stats);
     }
 
     public ApiResponse obtenerCuadrillas(Integer idMunicipio) {
@@ -67,9 +68,7 @@ public class DashboardService {
 
     public ApiResponse obtenerReportesHoy(Integer idMunicipio) {
         int count = reporteRepository.countReportesHoy(idMunicipio);
-        Map<String, Object> data = new HashMap<>();
-        data.put("reportesHoy", count);
-        return new ApiResponse(true, "Reportes de hoy obtenidos correctamente", data);
+        return new ApiResponse(true, "Reportes de hoy obtenidos", Map.of("reportesHoy", count));
     }
 
     public ApiResponse obtenerReportesActivosPorMunicipio() {
@@ -80,38 +79,14 @@ public class DashboardService {
             item.put("count", ((Number) row[1]).intValue());
             return item;
         }).toList();
-        return new ApiResponse(true, "Reportes activos por municipio obtenidos correctamente", data);
-    }
-
-    public ApiResponse obtenerEstadisticasPorMunicipio(int idMunicipio) {
-
-        Map<String, Object> estadisticas = new HashMap<>();
-
-        estadisticas.put("reportesPendientes",
-                reporteRepository.findIdsWithFilters("Pendiente", idMunicipio, null, null, null).size());
-        estadisticas.put("reportesFinalizados",
-                reporteRepository.findIdsWithFilters("Finalizado", idMunicipio, null, null, null).size());
-        estadisticas.put("reportesCancelados",
-                reporteRepository.findIdsWithFilters("Cancelado", idMunicipio, null, null, null).size());
-        estadisticas.put("reportesEnProceso",
-                reporteRepository.findIdsWithFilters("En curso", idMunicipio, null, null, null).size()
-                        + reporteRepository.findIdsWithFilters("En camino", idMunicipio, null, null, null).size()
-                        + reporteRepository.findIdsWithFilters("Asignado", idMunicipio, null, null, null).size());
-
-        return new ApiResponse(true, "Estadísticas del municipio obtenidas correctamente", estadisticas);
+        return new ApiResponse(true, "Reportes activos por municipio", data);
     }
 
     public ApiResponse obtenerEstadisticasPorFecha(String fechaInicio, String fechaFin) {
-
-        Map<String, Object> estadisticas = new HashMap<>();
-
-        estadisticas.put("reportesRegistrados",
-                reporteRepository.findIdsWithFilters(null, null, fechaInicio, fechaFin, null).size());
-        estadisticas.put("reportesFinalizados",
-                reporteRepository.findIdsWithFilters("Finalizado", null, fechaInicio, fechaFin, null).size());
-        estadisticas.put("reportesCancelados",
-                reporteRepository.findIdsWithFilters("Cancelado", null, fechaInicio, fechaFin, null).size());
-
-        return new ApiResponse(true, "Estadísticas por período obtenidas correctamente", estadisticas);
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("reportesRegistrados", reporteRepository.countByEstadoAndFecha(null, fechaInicio, fechaFin));
+        stats.put("reportesFinalizados", reporteRepository.countByEstadoAndFecha("Finalizado", fechaInicio, fechaFin));
+        stats.put("reportesCancelados", reporteRepository.countByEstadoAndFecha("Cancelado", fechaInicio, fechaFin));
+        return new ApiResponse(true, "Estadísticas por período", stats);
     }
 }

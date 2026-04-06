@@ -85,7 +85,7 @@ public class AsignacionService {
                 .findByCuadrilla(request.getIdCuadrilla());
         for (miembrosCuadrilla miembro : miembros) {
             notificacionService.enviarNotificacion(
-                    miembro.getUsuario().getIdUsuario(),
+                    miembro.getVoluntario().getUsuario().getIdUsuario(),
                     request.getIdReporte(),
                     "Se te ha asignado un nuevo reporte: " + reporteOpt.get().getTitulo()
             );
@@ -237,7 +237,7 @@ public class AsignacionService {
 
         reporteFinalizado finalizado = new reporteFinalizado();
         finalizado.setIdReporte(reporteRepository.findById(idReporte).get());
-        finalizado.setFotoEvidencia(Base64.getEncoder().encodeToString(fotoEvidencia.getBytes()).getBytes());
+        finalizado.setFotoEvidencia(fotoEvidencia.getBytes());
         finalizado.setComentarios(request.getComentarios());
         finalizado.setIdCuadrillaEncargada(asignacionOpt.get().getIdCuadrilla());
         finalizado.setFechaFinalizacion(new Date());

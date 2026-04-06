@@ -32,12 +32,8 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    // BCrypt es el algoritmo de encriptación para contraseñas
-    // Lo usan AuthService y UsuarioService con @Autowired PasswordEncoder
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -47,23 +43,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(List.of("*"));
-
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
-
         config.setAllowCredentials(false);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
@@ -72,68 +63,43 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/test/**").permitAll()
 
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // Públicos
+                .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/verify-token").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/feed/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/zones/active").permitAll()
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Solo superadmin
+                .requestMatchers(HttpMethod.POST, "/api/admin/users/admin").hasRole("SUPERADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/zones").hasRole("SUPERADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/zones/**").hasRole("SUPERADMIN")
 
-                .authorizeHttpRequests(auth -> auth
+                // Admin y superadmin
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/zones").hasAnyRole("ADMIN", "SUPERADMIN")
 
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/test/**").permitAll()
-                        //Endpoints públicos
-                        //Módulo 1.1 - Registro de ciudadano
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
-                        //Módulo 1.2 - Login
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        //Recuperación de contraseña
-                        .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/verify-token").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
-                        //Módulo 13 - Feed público (no requiere login)
-                        .requestMatchers(HttpMethod.GET, "/api/feed/**").permitAll()
-                        //Módulo 6.1 - Listar municipios activos
-                        .requestMatchers(HttpMethod.GET, "/api/zones/active").permitAll()
+                // Ciudadano, voluntario, admin, superadmin
+                .requestMatchers("/api/reports/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN", "SUPERADMIN")
+                .requestMatchers("/api/users/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN", "SUPERADMIN")
+                .requestMatchers("/api/notifications/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN", "SUPERADMIN")
 
-                        //Solo superadmin
-                        //Módulo 1.4 - Crear administradores
-                        .requestMatchers(HttpMethod.POST, "/api/admin/users/admin").hasRole("SUPERADMIN")
-                        //Módulo 6.1 - Habilitar/deshabilitar municipios
-                        .requestMatchers(HttpMethod.PUT, "/api/zones/**").hasRole("SUPERADMIN")
+                // Voluntario, admin, superadmin
+                .requestMatchers("/api/squads/**").hasAnyRole("VOLUNTARIO", "ADMIN", "SUPERADMIN")
 
-                        //Admin y superadmin
-                        //Módulo 1.4 - Gestión de usuarios
-                        .requestMatchers("/api/admin/users/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                        //Módulos 4.1, 4.4 - Panel y gestión de reportes
-                        .requestMatchers("/api/admin/reports/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                        //Módulo 3.1, 3.2 - Gestión y asignación de cuadrillas
-                        .requestMatchers("/api/admin/squads/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                        //Módulo 9 - Dashboard
-                        .requestMatchers("/api/admin/dashboard/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                        //Módulo 6.1 - Listar municipios
-                        .requestMatchers(HttpMethod.GET, "/api/zones/**").hasAnyRole("ADMIN", "SUPERADMIN")
-
-                        //Ciudadano, voluntario, admin y superadmin
-                        //Módulo 2.1, 2.2, 2.3, 2.4 - Gestión de reportes propios
-                        .requestMatchers("/api/reports/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN", "SUPERADMIN")
-                        // Módulo 1.3 - Solicitud de voluntario
-                        .requestMatchers("/api/users/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN", "SUPERADMIN")
-                        // Módulo 5.1, 5.2 - Notificaciones
-                        .requestMatchers("/api/notifications/**").hasAnyRole("CIUDADANO", "VOLUNTARIO", "ADMIN", "SUPERADMIN")
-
-                        //Solo voluntario, admin y superadmin
-                        //Módulo 3.3, 3.4, 3.6 - Votación y seguimiento de atención
-                        .requestMatchers("/api/squads/**").hasAnyRole("VOLUNTARIO", "ADMIN", "SUPERADMIN")
-                        //Cualquier otra ruta requiere autenticación
-                        .anyRequest().authenticated()
-                )
-
-                .authenticationProvider(authenticationProvider())
-
-                .addFilterBefore(jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                .anyRequest().authenticated()
+            )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

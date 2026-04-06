@@ -15,41 +15,21 @@ public class miembrosCuadrilla {
     private Cuadrilla cuadrilla;
 
     @ManyToOne
-    @JoinColumn(name = "idVoluntario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "idMiembro", referencedColumnName = "idVoluntario", nullable = false)
+    private Voluntario voluntario;
 
     @Column(name = "tipo", nullable = false, length = 10)
     private String tipo;
 
-    public int getNumeroVoluntario() {
-        return numeroVoluntario;
-    }
+    public int getNumeroVoluntario() { return numeroVoluntario; }
+    public void setNumeroVoluntario(int numeroVoluntario) { this.numeroVoluntario = numeroVoluntario; }
 
-    public void setNumeroVoluntario(int numeroVoluntario) {
-        this.numeroVoluntario = numeroVoluntario;
-    }
+    public Cuadrilla getCuadrilla() { return cuadrilla; }
+    public void setCuadrilla(Cuadrilla cuadrilla) { this.cuadrilla = cuadrilla; }
 
-    public Cuadrilla getCuadrilla() {
-        return cuadrilla;
-    }
+    public Voluntario getVoluntario() { return voluntario; }
+    public void setVoluntario(Voluntario voluntario) { this.voluntario = voluntario; }
 
-    public void setCuadrilla(Cuadrilla cuadrilla) {
-        this.cuadrilla = cuadrilla;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
 }

@@ -90,31 +90,24 @@ public class UsuarioService {
         }
 
         String tipoAdmin = adminOpt.get().getTipo();
-        List<Usuario> usuarios;
+        List<Object[]> rows;
 
         if (tipoAdmin.equals("superadmin") || adminOpt.get().getMunicipio() == null) {
-            usuarios = usuarioRepository.buscarIdsPorTipo(tipo).stream()
-                    .map(o -> ((Number) o).intValue())
-                    .map(id -> usuarioRepository.findById(id).orElse(null))
-                    .filter(u -> u != null)
-                    .collect(Collectors.toList());
+            rows = usuarioRepository.findByTipo(tipo);
         } else {
             int idMunicipio = adminOpt.get().getMunicipio().getIdMunicipio();
-            usuarios = usuarioRepository.buscarIdsPorTipoYMunicipio(tipo, idMunicipio).stream()
-                    .map(o -> ((Number) o).intValue())
-                    .map(id -> usuarioRepository.findById(id).orElse(null))
-                    .filter(u -> u != null)
-                    .collect(Collectors.toList());
+            rows = usuarioRepository.findByTipoAndMunicipio(tipo, idMunicipio);
         }
 
-        List<UsuarioResponse> response = usuarios.stream()
-                .map(u -> new UsuarioResponse(
-                        u.getIdUsuario(),
-                        u.getNombreUsuario(),
-                        u.getCorreo(),
-                        u.getTipo(),
-                        u.getEstado(),
-                        u.getMunicipio() != null ? u.getMunicipio().getNombre() : null
+        // row: [0]=idUsuario, [1]=nombreUsuario, [2]=correo, [3]=tipo, [4]=estado, [5]=municipio
+        List<UsuarioResponse> response = rows.stream()
+                .map(row -> new UsuarioResponse(
+                        ((Number) row[0]).intValue(),
+                        (String) row[1],
+                        (String) row[2],
+                        (String) row[3],
+                        (String) row[4],
+                        (String) row[5]
                 ))
                 .collect(Collectors.toList());
 

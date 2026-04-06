@@ -54,7 +54,7 @@ public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
     @Query(value = "SELECT COUNT(c.idCuadrilla) " +
             "FROM cuadrilla c " +
             "WHERE c.estado = 'activa' " +
-            "AND (:idMunicipio IS NULL OR c.idMunicipio = :idMunicipio) " +
+            "AND c.idMunicipio = NVL(:idMunicipio, c.idMunicipio) " +
             "AND NOT EXISTS (" +
             "   SELECT 1 FROM reporteAsignadoCuadrilla rac " +
             "   INNER JOIN detallesReporte dr ON rac.idReporte = dr.idReporte " +
@@ -69,7 +69,7 @@ public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
             "INNER JOIN reporteAsignadoCuadrilla rac ON c.idCuadrilla = rac.idCuadrilla " +
             "INNER JOIN detallesReporte dr ON rac.idReporte = dr.idReporte " +
             "WHERE c.estado = 'activa' " +
-            "AND (:idMunicipio IS NULL OR c.idMunicipio = :idMunicipio) " +
+            "AND c.idMunicipio = NVL(:idMunicipio, c.idMunicipio) " +
             "AND dr.estado IN ('Asignado', 'En camino', 'En curso')",
             nativeQuery = true)
     int countCuadrillasAsignadas(@Param("idMunicipio") Integer idMunicipio);
@@ -78,7 +78,7 @@ public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
     @Query(value = "SELECT COUNT(c.idCuadrilla) " +
             "FROM cuadrilla c " +
             "WHERE c.estado = 'activa' " +
-            "AND (:idMunicipio IS NULL OR c.idMunicipio = :idMunicipio)",
+            "AND c.idMunicipio = NVL(:idMunicipio, c.idMunicipio)",
             nativeQuery = true)
     int countCuadrillasActivas(@Param("idMunicipio") Integer idMunicipio);
 
