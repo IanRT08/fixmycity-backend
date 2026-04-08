@@ -86,13 +86,21 @@ public class UsuarioNotificacionPreferenciasService {
             return new ApiResponse(false, "El token FCM es obligatorio");
         }
 
-        dispositivoFcmRepository.deleteByTokenFcm(token);
+        String plataforma = req.getPlataforma() != null ? req.getPlataforma().trim() : null;
+        Optional<DispositivoFcm> existente = dispositivoFcmRepository.findByTokenFcm(token);
+        if (existente.isPresent()) {
+            DispositivoFcm d = existente.get();
+            d.setIdUsuario(idUsuario);
+            d.setPlataforma(plataforma);
+            dispositivoFcmRepository.save(d);
+            return new ApiResponse(true, "Token FCM registrado");
+        }
 
-        DispositivoFcm d = new DispositivoFcm();
-        d.setIdUsuario(idUsuario);
-        d.setTokenFcm(token);
-        d.setPlataforma(req.getPlataforma() != null ? req.getPlataforma().trim() : null);
-        dispositivoFcmRepository.save(d);
+        DispositivoFcm nuevo = new DispositivoFcm();
+        nuevo.setIdUsuario(idUsuario);
+        nuevo.setTokenFcm(token);
+        nuevo.setPlataforma(plataforma);
+        dispositivoFcmRepository.save(nuevo);
 
         return new ApiResponse(true, "Token FCM registrado");
     }
