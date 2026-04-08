@@ -86,4 +86,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
             "WHERE idUsuario = :id",
             nativeQuery = true)
     void updateTipo(@Param("id") int id, @Param("tipo") String tipo);
+
+    /** Usuarios activos en un municipio (p. ej. push por nuevo reporte en zona). */
+    @Query(value = "SELECT u.idUsuario FROM usuario u " +
+            "WHERE u.idMunicipio = :idMunicipio AND u.estado = 'activo' AND u.idUsuario <> :excluirId",
+            nativeQuery = true)
+    List<Object> findIdsByMunicipioActivoExcluyendo(@Param("idMunicipio") int idMunicipio,
+                                                    @Param("excluirId") int excluirId);
 }

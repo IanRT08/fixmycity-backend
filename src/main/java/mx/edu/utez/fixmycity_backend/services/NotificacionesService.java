@@ -8,6 +8,7 @@ import mx.edu.utez.fixmycity_backend.modelos.Usuario;
 import mx.edu.utez.fixmycity_backend.repositories.NotificacionesRepository;
 import mx.edu.utez.fixmycity_backend.repositories.ReporteRepository;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
+import mx.edu.utez.fixmycity_backend.support.TransactionAfterCommit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,25 +31,37 @@ public class NotificacionesService {
     @Autowired
     private ReporteRepository reporteRepository;
 
+    @Autowired
+    private FcmPushService fcmPushService;
+
+    @Autowired
+    private TransactionAfterCommit afterCommit;
+
     @Transactional
     public void enviarNotificacion(int idUsuario, Integer idReporte, String mensaje) {
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(idUsuario);
         if (usuarioOpt.isEmpty()) return;
 
+        if (idReporte == null) {
+            afterCommit.run(() -> fcmPushService.enviarSimpleAsync(idUsuario, mensaje));
+            return;
+        }
+
+        Optional<Reporte> reporteOpt = reporteRepository.findById(idReporte);
+        if (reporteOpt.isEmpty()) return;
+
         Notificaciones notificacion = new Notificaciones();
         notificacion.setIdUsuario(usuarioOpt.get());
         notificacion.setMensaje(mensaje);
         notificacion.setLeida(false);
         notificacion.setFechaEnvio(Timestamp.from(Instant.now()));
-
-        if (idReporte == null) return;
-
-        Optional<Reporte> reporteOpt = reporteRepository.findById(idReporte);
-        if (reporteOpt.isEmpty()) return;
         notificacion.setIdReporte(reporteOpt.get());
 
         notificacionesRepository.save(notificacion);
+
+        Reporte reporte = reporteOpt.get();
+        afterCommit.run(() -> fcmPushService.enviarSobreReporteAsync(idUsuario, idReporte, mensaje, reporte));
     }
 
     public ApiResponse obtenerNotificaciones(int idUsuario) {

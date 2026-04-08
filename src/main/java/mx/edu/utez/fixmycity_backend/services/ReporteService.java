@@ -7,6 +7,7 @@ import mx.edu.utez.fixmycity_backend.dto.response.ReportePageResponse;
 import mx.edu.utez.fixmycity_backend.dto.response.ReporteResponse;
 import mx.edu.utez.fixmycity_backend.modelos.*;
 import mx.edu.utez.fixmycity_backend.repositories.*;
+import mx.edu.utez.fixmycity_backend.support.TransactionAfterCommit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,8 @@ public class ReporteService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private MunicipioRepository municipioRepository;
     @Autowired private NotificacionesService notificacionService;
+    @Autowired private FcmPushService fcmPushService;
+    @Autowired private TransactionAfterCommit afterCommit;
 
     @Transactional
     public ApiResponse crearReporte(int idUsuario, ReporteRequest request,
@@ -71,6 +74,10 @@ public class ReporteService {
             }
         }
         registrarHistorial(reporte, idUsuario, "Pendiente", "Pendiente");
+        int idMun = municipioOpt.get().getIdMunicipio();
+        int idRep = reporte.getIdReporte();
+        String titulo = reporte.getTitulo();
+        afterCommit.run(() -> fcmPushService.enviarNuevoReporteEnMunicipioAsync(idMun, idRep, titulo, idUsuario));
         return new ApiResponse(true, "Reporte creado correctamente");
     }
 
