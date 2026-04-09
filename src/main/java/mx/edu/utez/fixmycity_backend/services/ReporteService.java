@@ -30,16 +30,38 @@ public class ReporteService {
 
     private static final int MAX_PAGE_SIZE = 100;
 
-    @Autowired private ReporteRepository reporteRepository;
-    @Autowired private detallesReporteRepository detallesReporteRepository;
-    @Autowired private fotosReporteRepository fotosReporteRepository;
-    @Autowired private cancelacionReporteRepository cancelacionReporteRepository;
-    @Autowired private historialReporteRepository historialReporteRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private MunicipioRepository municipioRepository;
-    @Autowired private NotificacionesService notificacionService;
-    @Autowired private FcmPushService fcmPushService;
-    @Autowired private TransactionAfterCommit afterCommit;
+    private final ReporteRepository reporteRepository;
+    private final detallesReporteRepository detallesReporteRepository;
+    private final fotosReporteRepository fotosReporteRepository;
+    private final cancelacionReporteRepository cancelacionReporteRepository;
+    private final historialReporteRepository historialReporteRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final MunicipioRepository municipioRepository;
+    private final NotificacionesService notificacionService;
+    private final FcmPushService fcmPushService;
+    private final TransactionAfterCommit afterCommit;
+
+    public ReporteService(ReporteRepository reporteRepository,
+                          detallesReporteRepository detallesReporteRepository,
+                          fotosReporteRepository fotosReporteRepository,
+                          cancelacionReporteRepository cancelacionReporteRepository,
+                          historialReporteRepository historialReporteRepository,
+                          UsuarioRepository usuarioRepository,
+                          MunicipioRepository municipioRepository,
+                          NotificacionesService notificacionService,
+                          FcmPushService fcmPushService,
+                          TransactionAfterCommit afterCommit) {
+        this.reporteRepository = reporteRepository;
+        this.detallesReporteRepository = detallesReporteRepository;
+        this.fotosReporteRepository = fotosReporteRepository;
+        this.cancelacionReporteRepository = cancelacionReporteRepository;
+        this.historialReporteRepository = historialReporteRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.municipioRepository = municipioRepository;
+        this.notificacionService = notificacionService;
+        this.fcmPushService = fcmPushService;
+        this.afterCommit = afterCommit;
+    }
 
     @Transactional
     public ApiResponse crearReporte(int idUsuario, ReporteRequest request,
@@ -81,6 +103,7 @@ public class ReporteService {
         return new ApiResponse(true, "Reporte creado correctamente");
     }
 
+    @Transactional(readOnly = true)
     public ApiResponse obtenerMisReportes(int idUsuario, Integer page, Integer size) {
         if (size == null) {
             List<Reporte> reportes = reporteRepository.findIdsByUsuario(idUsuario).stream()
@@ -100,6 +123,7 @@ public class ReporteService {
                 toPageResponse(mapearReportes(reportes), total, p, s));
     }
 
+    @Transactional(readOnly = true)
     public ApiResponse obtenerReportePorId(int idReporte, int idUsuario) {
         Optional<Reporte> reporteOpt = reporteRepository.findById(idReporte);
         if (reporteOpt.isEmpty()) return new ApiResponse(false, "Reporte no encontrado");
@@ -168,6 +192,7 @@ public class ReporteService {
         return new ApiResponse(true, "Reporte cancelado correctamente");
     }
 
+    @Transactional(readOnly = true)
     public ApiResponse obtenerDetalleAdmin(int idReporte, int idAdmin) {
         Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
         if (adminOpt.isEmpty()) return new ApiResponse(false, "Administrador no encontrado");
@@ -193,6 +218,7 @@ public class ReporteService {
                 reporte.getUsuario().getNombreUsuario(), fotos));
     }
 
+    @Transactional(readOnly = true)
     public ApiResponse listarReportesAdmin(String estado, Integer idMunicipio,
                                            String fechaInicio, String fechaFin,
                                            String keyword, int idAdmin) {
@@ -259,6 +285,7 @@ public class ReporteService {
         return new ApiResponse(true, "Reporte marcado como duplicado");
     }
 
+    @Transactional(readOnly = true)
     public ApiResponse obtenerDetallePublico(int idReporte) {
         Optional<Reporte> reporteOpt = reporteRepository.findById(idReporte);
         if (reporteOpt.isEmpty()) return new ApiResponse(false, "Reporte no encontrado");
@@ -275,6 +302,7 @@ public class ReporteService {
                 reporte.getUsuario().getNombreUsuario(), fotos));
     }
 
+    @Transactional(readOnly = true)
     public ApiResponse obtenerFeed(int idMunicipio, Integer page, Integer size) {
         if (size == null) {
             List<Reporte> reportes = reporteRepository.findFeedIdsByMunicipio(idMunicipio).stream()

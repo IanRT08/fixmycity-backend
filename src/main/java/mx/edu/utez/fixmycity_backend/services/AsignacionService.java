@@ -20,38 +20,41 @@ import java.util.Optional;
 @Service
 public class AsignacionService {
 
-    @Autowired
-    private ReporteRepository reporteRepository;
+    private final ReporteRepository reporteRepository;
+    private final detallesReporteRepository detallesReporteRepository;
+    private final reporteAsignadoCuadrillaRepository asignacionRepository;
+    private final reporteFinalizadoRepository reporteFinalizadoRepository;
+    private final historialReporteRepository historialReporteRepository;
+    private final CuadrillaRepository cuadrillaRepository;
+    private final miembrosCuadrillaRepository miembrosCuadrillaRepository;
+    private final VotacionRepository votacionRepository;
+    private final VoluntarioRepository voluntarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final NotificacionesService notificacionService;
 
-    @Autowired
-    private detallesReporteRepository detallesReporteRepository;
-
-    @Autowired
-    private reporteAsignadoCuadrillaRepository asignacionRepository;
-
-    @Autowired
-    private reporteFinalizadoRepository reporteFinalizadoRepository;
-
-    @Autowired
-    private historialReporteRepository historialReporteRepository;
-
-    @Autowired
-    private CuadrillaRepository cuadrillaRepository;
-
-    @Autowired
-    private miembrosCuadrillaRepository miembrosCuadrillaRepository;
-
-    @Autowired
-    private VotacionRepository votacionRepository;
-
-    @Autowired
-    private VoluntarioRepository voluntarioRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private NotificacionesService notificacionService;
+    public AsignacionService(ReporteRepository reporteRepository,
+                             detallesReporteRepository detallesReporteRepository,
+                             reporteAsignadoCuadrillaRepository asignacionRepository,
+                             reporteFinalizadoRepository reporteFinalizadoRepository,
+                             historialReporteRepository historialReporteRepository,
+                             CuadrillaRepository cuadrillaRepository,
+                             miembrosCuadrillaRepository miembrosCuadrillaRepository,
+                             VotacionRepository votacionRepository,
+                             VoluntarioRepository voluntarioRepository,
+                             UsuarioRepository usuarioRepository,
+                             NotificacionesService notificacionService) {
+        this.reporteRepository = reporteRepository;
+        this.detallesReporteRepository = detallesReporteRepository;
+        this.asignacionRepository = asignacionRepository;
+        this.reporteFinalizadoRepository = reporteFinalizadoRepository;
+        this.historialReporteRepository = historialReporteRepository;
+        this.cuadrillaRepository = cuadrillaRepository;
+        this.miembrosCuadrillaRepository = miembrosCuadrillaRepository;
+        this.votacionRepository = votacionRepository;
+        this.voluntarioRepository = voluntarioRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.notificacionService = notificacionService;
+    }
 
     @Transactional
     public ApiResponse asignarReporte(AsignacionReporteRequest request, int idAdmin) {
