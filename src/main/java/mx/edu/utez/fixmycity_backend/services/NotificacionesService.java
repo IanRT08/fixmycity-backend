@@ -3,7 +3,6 @@ package mx.edu.utez.fixmycity_backend.services;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.dto.response.NotificacionResponse;
 import mx.edu.utez.fixmycity_backend.modelos.Notificaciones;
-import mx.edu.utez.fixmycity_backend.modelos.Reporte;
 import mx.edu.utez.fixmycity_backend.modelos.Usuario;
 import mx.edu.utez.fixmycity_backend.repositories.NotificacionesRepository;
 import mx.edu.utez.fixmycity_backend.repositories.ReporteRepository;
@@ -12,6 +11,8 @@ import mx.edu.utez.fixmycity_backend.support.TransactionAfterCommit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import mx.edu.utez.fixmycity_backend.modelos.Reporte;
+
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -60,8 +61,8 @@ public class NotificacionesService {
 
         notificacionesRepository.save(notificacion);
 
-        Reporte reporte = reporteOpt.get();
-        afterCommit.run(() -> fcmPushService.enviarSobreReporteAsync(idUsuario, idReporte, mensaje, reporte));
+        int idDueno = reporteOpt.get().getUsuario().getIdUsuario();
+        afterCommit.run(() -> fcmPushService.enviarSobreReporteAsync(idUsuario, idReporte, mensaje, idDueno));
     }
 
     public ApiResponse obtenerNotificaciones(int idUsuario) {

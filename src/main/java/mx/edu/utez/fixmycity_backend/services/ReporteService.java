@@ -236,8 +236,10 @@ public class ReporteService {
         cancelacionReporteRepository.save(cancelacion);
         registrarHistorial(reporte, idAdmin, estadoActual, "Rechazado");
         detallesReporteRepository.updateEstado(idReporte, "Rechazado");
-        notificacionService.enviarNotificacion(reporte.getUsuario().getIdUsuario(), idReporte,
-                "Tu reporte '" + reporte.getTitulo() + "' fue rechazado");
+        int idDuenoR = reporte.getUsuario().getIdUsuario();
+        String mensajeR = "Tu reporte '" + reporte.getTitulo() + "' fue rechazado";
+        notificacionService.enviarNotificacion(idDuenoR, idReporte, mensajeR);
+        afterCommit.run(() -> fcmPushService.enviarSobreReporteAsync(idDuenoR, idReporte, mensajeR, idDuenoR));
         return new ApiResponse(true, "Reporte rechazado correctamente");
     }
 
@@ -254,8 +256,10 @@ public class ReporteService {
         Reporte reporte = reporteOpt.get();
         registrarHistorial(reporte, idAdmin, estadoActual, "Duplicado");
         detallesReporteRepository.updateEstado(idReporte, "Duplicado");
-        notificacionService.enviarNotificacion(reporte.getUsuario().getIdUsuario(), idReporte,
-                "Tu reporte '" + reporte.getTitulo() + "' fue marcado como duplicado");
+        int idDuenoD = reporte.getUsuario().getIdUsuario();
+        String mensajeD = "Tu reporte '" + reporte.getTitulo() + "' fue marcado como duplicado";
+        notificacionService.enviarNotificacion(idDuenoD, idReporte, mensajeD);
+        afterCommit.run(() -> fcmPushService.enviarSobreReporteAsync(idDuenoD, idReporte, mensajeD, idDuenoD));
         return new ApiResponse(true, "Reporte marcado como duplicado");
     }
 
