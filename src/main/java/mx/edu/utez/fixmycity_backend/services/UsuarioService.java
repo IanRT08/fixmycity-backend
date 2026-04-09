@@ -21,17 +21,20 @@ import java.util.stream.Collectors;
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final AdministradoresRepository administradorRepository;
+    private final MunicipioRepository municipioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private AdministradoresRepository administradorRepository;
-
-    @Autowired
-    private MunicipioRepository municipioRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          AdministradoresRepository administradorRepository,
+                          MunicipioRepository municipioRepository,
+                          PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.administradorRepository = administradorRepository;
+        this.municipioRepository = municipioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Transactional
     public ApiResponse crearAdministrador(RegistroAdminRequest request) {
@@ -83,6 +86,7 @@ public class UsuarioService {
         return new ApiResponse(true, "Estado del usuario actualizado correctamente");
     }
 
+    @Transactional(readOnly = true)
     public ApiResponse listarPorTipo(String tipo, int idAdmin) {
         Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
         if (adminOpt.isEmpty()) {

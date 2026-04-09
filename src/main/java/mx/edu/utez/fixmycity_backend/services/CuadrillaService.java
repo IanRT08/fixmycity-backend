@@ -15,11 +15,23 @@ import java.util.stream.Collectors;
 @Service
 public class CuadrillaService {
 
-    @Autowired private CuadrillaRepository cuadrillaRepository;
-    @Autowired private miembrosCuadrillaRepository miembrosCuadrillaRepository;
-    @Autowired private VoluntarioRepository voluntarioRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private MunicipioRepository municipioRepository;
+    private final CuadrillaRepository cuadrillaRepository;
+    private final miembrosCuadrillaRepository miembrosCuadrillaRepository;
+    private final VoluntarioRepository voluntarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final MunicipioRepository municipioRepository;
+
+    public CuadrillaService(CuadrillaRepository cuadrillaRepository,
+                            miembrosCuadrillaRepository miembrosCuadrillaRepository,
+                            VoluntarioRepository voluntarioRepository,
+                            UsuarioRepository usuarioRepository,
+                            MunicipioRepository municipioRepository) {
+        this.cuadrillaRepository = cuadrillaRepository;
+        this.miembrosCuadrillaRepository = miembrosCuadrillaRepository;
+        this.voluntarioRepository = voluntarioRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.municipioRepository = municipioRepository;
+    }
 
     @Transactional
     public ApiResponse crearCuadrilla(CuadrillaRequest request) {
@@ -55,6 +67,7 @@ public class CuadrillaService {
         return new ApiResponse(true, "Cuadrilla creada correctamente");
     }
 
+    @Transactional(readOnly = true)
     public ApiResponse listarCuadrillas(String estado, int idAdmin) {
         Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
         if (adminOpt.isEmpty()) return new ApiResponse(false, "Administrador no encontrado");
@@ -89,6 +102,7 @@ public class CuadrillaService {
     }
 
     // Returns list of {idUsuario, nombreUsuario} for voluntarios without active squad
+    @Transactional(readOnly = true)
     public ApiResponse listarVoluntariosDisponibles(int idMunicipio) {
         List<Object> ids = voluntarioRepository.findAvailableIdsByMunicipio(idMunicipio);
         List<Map<String, Object>> result = ids.stream()

@@ -3,7 +3,6 @@ package mx.edu.utez.fixmycity_backend.dto.request;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
-/** Al menos uno de los campos debe enviarse (validado en servicio). */
 public class PreferenciasNotificacionUpdateRequest {
 
     @Min(0)

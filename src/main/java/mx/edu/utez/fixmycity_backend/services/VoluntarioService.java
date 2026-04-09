@@ -16,23 +16,26 @@ import java.util.stream.Collectors;
 @Service
 public class VoluntarioService {
 
-    @Autowired
-    private SolicitudVoluntarioRepository solicitudRepository;
+    private final SolicitudVoluntarioRepository solicitudRepository;
+    private final informacionVoluntarioRepository informacionRepository;
+    private final VoluntarioRepository voluntarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final MunicipioRepository municipioRepository;
+    private final NotificacionesService notificacionService;
 
-    @Autowired
-    private informacionVoluntarioRepository informacionRepository;
-
-    @Autowired
-    private VoluntarioRepository voluntarioRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private MunicipioRepository municipioRepository;
-
-    @Autowired
-    private NotificacionesService notificacionService;
+    public VoluntarioService(SolicitudVoluntarioRepository solicitudRepository,
+                             informacionVoluntarioRepository informacionRepository,
+                             VoluntarioRepository voluntarioRepository,
+                             UsuarioRepository usuarioRepository,
+                             MunicipioRepository municipioRepository,
+                             NotificacionesService notificacionService) {
+        this.solicitudRepository = solicitudRepository;
+        this.informacionRepository = informacionRepository;
+        this.voluntarioRepository = voluntarioRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.municipioRepository = municipioRepository;
+        this.notificacionService = notificacionService;
+    }
 
     @Transactional
     public ApiResponse solicitarVoluntario(int idUsuario, SolicitudVoluntarioRequest request) {
@@ -66,6 +69,7 @@ public class VoluntarioService {
         return new ApiResponse(true, "Solicitud enviada correctamente");
     }
 
+    @Transactional(readOnly = true)
     public ApiResponse listarSolicitudesPendientes(int idAdmin) {
         Optional<Usuario> adminOpt = usuarioRepository.findById(idAdmin);
         if (adminOpt.isEmpty()) {

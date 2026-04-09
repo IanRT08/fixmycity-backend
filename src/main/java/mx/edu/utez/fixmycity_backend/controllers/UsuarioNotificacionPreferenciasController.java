@@ -56,7 +56,6 @@ public class UsuarioNotificacionPreferenciasController {
         return ResponseEntity.status(r.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(r);
     }
 
-    /** Misma semántica que DELETE /fcm-token; útil si el cliente HTTP no envía body en DELETE. */
     @PostMapping(value = "/fcm-token/revoke", consumes = "application/json")
     public ResponseEntity<ApiResponse> revocarFcm(@Valid @RequestBody FcmTokenRequest body) {
         int id = auth.getAuthenticatedUserId();
