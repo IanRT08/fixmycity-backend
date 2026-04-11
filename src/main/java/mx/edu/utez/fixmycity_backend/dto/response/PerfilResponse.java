@@ -15,12 +15,25 @@ public class PerfilResponse {
     /** Base64 de la imagen, o null si no hay foto (admins u opcional). */
     private String fotoPerfilBase64;
 
+    /** True si el usuario es el {@code Voluntario} líder de alguna cuadrilla (tabla cuadrilla.idLider). */
+    private boolean esLiderDeCuadrilla;
+
+    /** Identificador de la cuadrilla donde es líder; null si no aplica o no se encontró fila. */
+    private Integer idCuadrilla;
+
     public PerfilResponse() {
     }
 
     public PerfilResponse(int idUsuario, String nombreUsuario, String correo, Date fechaNacimiento,
                           String municipio, int idMunicipio, String tipo, String estado,
                           String fotoPerfilBase64) {
+        this(idUsuario, nombreUsuario, correo, fechaNacimiento, municipio, idMunicipio, tipo, estado,
+                fotoPerfilBase64, false, null);
+    }
+
+    public PerfilResponse(int idUsuario, String nombreUsuario, String correo, Date fechaNacimiento,
+                          String municipio, int idMunicipio, String tipo, String estado,
+                          String fotoPerfilBase64, boolean esLiderDeCuadrilla, Integer idCuadrilla) {
         this.idUsuario = idUsuario;
         this.nombreUsuario = nombreUsuario;
         this.correo = correo;
@@ -30,6 +43,8 @@ public class PerfilResponse {
         this.tipo = tipo;
         this.estado = estado;
         this.fotoPerfilBase64 = fotoPerfilBase64;
+        this.esLiderDeCuadrilla = esLiderDeCuadrilla;
+        this.idCuadrilla = idCuadrilla;
     }
 
     public int getIdUsuario() {
@@ -102,5 +117,21 @@ public class PerfilResponse {
 
     public void setFotoPerfilBase64(String fotoPerfilBase64) {
         this.fotoPerfilBase64 = fotoPerfilBase64;
+    }
+
+    public boolean getEsLiderDeCuadrilla() {
+        return esLiderDeCuadrilla;
+    }
+
+    public void setEsLiderDeCuadrilla(boolean esLiderDeCuadrilla) {
+        this.esLiderDeCuadrilla = esLiderDeCuadrilla;
+    }
+
+    public Integer getIdCuadrilla() {
+        return idCuadrilla;
+    }
+
+    public void setIdCuadrilla(Integer idCuadrilla) {
+        this.idCuadrilla = idCuadrilla;
     }
 }

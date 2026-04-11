@@ -14,6 +14,13 @@ import java.util.Optional;
 @Repository
 public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
 
+    /** Cuadrillas donde el voluntario indicado es el líder (idLider). Puede haber más de una fila en teoría; el perfil usa la primera. */
+    @Query(value = "SELECT c.idCuadrilla " +
+            "FROM cuadrilla c " +
+            "WHERE c.idLider = :idVoluntario",
+            nativeQuery = true)
+    List<Object> findIdsByIdLiderVoluntario(@Param("idVoluntario") int idVoluntario);
+
     //Modulo 3.1 - Verificar si ya existe una cuadrilla con ese nombre
     @Query(value = "SELECT c.idCuadrilla " +
             "FROM cuadrilla c " +

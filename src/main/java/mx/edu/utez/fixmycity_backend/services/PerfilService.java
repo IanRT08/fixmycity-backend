@@ -3,7 +3,9 @@ package mx.edu.utez.fixmycity_backend.services;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.dto.response.PerfilResponse;
 import mx.edu.utez.fixmycity_backend.modelos.Usuario;
+import mx.edu.utez.fixmycity_backend.repositories.CuadrillaRepository;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
+import mx.edu.utez.fixmycity_backend.repositories.VoluntarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,9 +26,15 @@ public class PerfilService {
     private static final long MAX_FOTO_BYTES = 5 * 1024 * 1024;
 
     private final UsuarioRepository usuarioRepository;
+    private final VoluntarioRepository voluntarioRepository;
+    private final CuadrillaRepository cuadrillaRepository;
 
-    public PerfilService(UsuarioRepository usuarioRepository) {
+    public PerfilService(UsuarioRepository usuarioRepository,
+                         VoluntarioRepository voluntarioRepository,
+                         CuadrillaRepository cuadrillaRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.voluntarioRepository = voluntarioRepository;
+        this.cuadrillaRepository = cuadrillaRepository;
     }
 
     public ApiResponse obtenerPerfil(String nombreUsuario) {
@@ -87,6 +96,19 @@ public class PerfilService {
                 : null;
         int idMunicipio = u.getMunicipio() != null ? u.getMunicipio().getIdMunicipio() : -1;
         String nombreMunicipio = u.getMunicipio() != null ? u.getMunicipio().getNombre() : null;
+
+        boolean esLider = false;
+        Integer idCuadrillaLider = null;
+        Optional<Object> idVolOpt = voluntarioRepository.findIdByUsuario(u.getIdUsuario());
+        if (idVolOpt.isPresent()) {
+            int idVoluntario = ((Number) idVolOpt.get()).intValue();
+            List<Object> idsCuadrilla = cuadrillaRepository.findIdsByIdLiderVoluntario(idVoluntario);
+            if (!idsCuadrilla.isEmpty()) {
+                esLider = true;
+                idCuadrillaLider = ((Number) idsCuadrilla.get(0)).intValue();
+            }
+        }
+
         return new PerfilResponse(
                 u.getIdUsuario(),
                 u.getNombreUsuario(),
@@ -96,7 +118,9 @@ public class PerfilService {
                 idMunicipio,
                 u.getTipo(),
                 u.getEstado(),
-                fotoB64
+                fotoB64,
+                esLider,
+                idCuadrillaLider
         );
     }
 

@@ -11,6 +11,8 @@ import java.util.List;
 @Repository
 public interface miembrosCuadrillaRepository extends JpaRepository<miembrosCuadrilla, Integer> {
 
+    List<miembrosCuadrilla> findByVoluntario_IdVoluntario(int idVoluntario);
+
     //Modulo 3.1 - Listar todos los miembros de una cuadrilla
     @Query(value = "SELECT mc.numeroVoluntario, mc.idCuadrilla, mc.idMiembro, mc.tipo " +
             "FROM miembrosCuadrilla mc " +

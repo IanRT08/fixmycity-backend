@@ -326,10 +326,35 @@ public class ReporteService {
                 toPageResponse(mapearReportes(reportes), total, p, s));
     }
 
-    private ReportePageResponse toPageResponse(List<ReporteResponse> content, long totalElements, int page, int size) {
+    /** Reutilizable por listados paginados (feed, mis reportes, asignaciones de cuadrilla). */
+    public ReportePageResponse toPageResponse(List<ReporteResponse> content, long totalElements, int page, int size) {
         int totalPages = size > 0 ? (int) Math.ceil((double) totalElements / size) : 0;
         boolean last = totalPages == 0 || page >= totalPages - 1;
         return new ReportePageResponse(content, totalElements, totalPages, page, size, last);
+    }
+
+    /** Misma forma que listados feed / mis reportes: sin fotos en payload. */
+    @Transactional(readOnly = true)
+    public Optional<ReporteResponse> construirListadoReporte(int idReporte) {
+        return reporteRepository.findById(idReporte).map(this::mapearReporte);
+    }
+
+    /** Detalle con fotos en Base64 (mismo criterio que feed público y detalle dueño). */
+    @Transactional(readOnly = true)
+    public Optional<ReporteResponse> construirDetalleReporteConFotos(int idReporte) {
+        Optional<Reporte> reporteOpt = reporteRepository.findById(idReporte);
+        if (reporteOpt.isEmpty()) return Optional.empty();
+        Reporte reporte = reporteOpt.get();
+        detallesReporte detalles = detallesReporteRepository.findByReporte(idReporte).orElse(null);
+        List<String> fotos = fotosReporteRepository.findByReporte(idReporte).stream()
+                .map(f -> Base64.getEncoder().encodeToString(f.getFoto())).collect(Collectors.toList());
+        return Optional.of(new ReporteResponse(
+                reporte.getIdReporte(), reporte.getTitulo(),
+                detalles != null ? detalles.getDescripcion() : null,
+                detalles != null ? detalles.getEstado() : null,
+                detalles != null ? detalles.getMunicipios().getNombre() : null,
+                detalles != null ? detalles.getFechaRegistro() : null,
+                reporte.getUsuario().getNombreUsuario(), fotos));
     }
 
     private void registrarHistorial(Reporte reporte, int idResponsable, String estadoAnterior, String estadoNuevo) {

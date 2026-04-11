@@ -8,6 +8,7 @@ import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.security.AuthenticationHelper;
 import mx.edu.utez.fixmycity_backend.services.AsignacionService;
 import mx.edu.utez.fixmycity_backend.services.CuadrillaService;
+import mx.edu.utez.fixmycity_backend.services.SquadVolunteerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,13 +22,16 @@ public class CuadrillaController {
 
     private final CuadrillaService cuadrillaService;
     private final AsignacionService asignacionService;
+    private final SquadVolunteerService squadVolunteerService;
     private final AuthenticationHelper auth;
 
     public CuadrillaController(CuadrillaService cuadrillaService,
                               AsignacionService asignacionService,
+                              SquadVolunteerService squadVolunteerService,
                               AuthenticationHelper auth) {
         this.cuadrillaService = cuadrillaService;
         this.asignacionService = asignacionService;
+        this.squadVolunteerService = squadVolunteerService;
         this.auth = auth;
     }
 
@@ -61,6 +65,37 @@ public class CuadrillaController {
         if (idAdmin == -1) return unauthorized();
         ApiResponse response = asignacionService.asignarReporte(request, idAdmin);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /** Reportes asignados a la(s) cuadrilla(s) del voluntario (lista tipo ASIGNADOS). */
+    @GetMapping("/api/squads/assignments")
+    public ResponseEntity<ApiResponse> asignacionesCuadrilla(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Integer idCuadrilla) {
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
+        ApiResponse r = squadVolunteerService.listarAsignaciones(idUsuario, page, size, estado, idCuadrilla);
+        return ResponseEntity.status(r.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(r);
+    }
+
+    /** Detalle de reporte para miembro de cuadrilla (coherente con listado de asignaciones). */
+    @GetMapping("/api/squads/reports/{idReporte}")
+    public ResponseEntity<ApiResponse> reporteParaCuadrilla(@PathVariable int idReporte) {
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
+        ApiResponse r = squadVolunteerService.obtenerReporteCuadrilla(idReporte, idUsuario);
+        return ResponseEntity.status(r.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(r);
+    }
+
+    /** Cuadrilla del voluntario autenticado y sus miembros (Mi equipo). */
+    @GetMapping("/api/squads/me")
+    public ResponseEntity<ApiResponse> miCuadrilla() {
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
+        ApiResponse r = squadVolunteerService.obtenerMiCuadrilla(idUsuario);
+        return ResponseEntity.status(r.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(r);
     }
 
     @PostMapping("/api/squads/vote")
