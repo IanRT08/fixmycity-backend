@@ -1,11 +1,16 @@
 package mx.edu.utez.fixmycity_backend.services;
 
+import mx.edu.utez.fixmycity_backend.dto.request.PerfilUpdateRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
+import mx.edu.utez.fixmycity_backend.dto.response.PerfilActualizadoResponse;
 import mx.edu.utez.fixmycity_backend.dto.response.PerfilResponse;
+import mx.edu.utez.fixmycity_backend.modelos.Municipios;
 import mx.edu.utez.fixmycity_backend.modelos.Usuario;
 import mx.edu.utez.fixmycity_backend.repositories.CuadrillaRepository;
+import mx.edu.utez.fixmycity_backend.repositories.MunicipioRepository;
 import mx.edu.utez.fixmycity_backend.repositories.UsuarioRepository;
 import mx.edu.utez.fixmycity_backend.repositories.VoluntarioRepository;
+import mx.edu.utez.fixmycity_backend.security.JwtUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +21,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -28,13 +36,19 @@ public class PerfilService {
     private final UsuarioRepository usuarioRepository;
     private final VoluntarioRepository voluntarioRepository;
     private final CuadrillaRepository cuadrillaRepository;
+    private final MunicipioRepository municipioRepository;
+    private final JwtUtils jwtUtils;
 
     public PerfilService(UsuarioRepository usuarioRepository,
                          VoluntarioRepository voluntarioRepository,
-                         CuadrillaRepository cuadrillaRepository) {
+                         CuadrillaRepository cuadrillaRepository,
+                         MunicipioRepository municipioRepository,
+                         JwtUtils jwtUtils) {
         this.usuarioRepository = usuarioRepository;
         this.voluntarioRepository = voluntarioRepository;
         this.cuadrillaRepository = cuadrillaRepository;
+        this.municipioRepository = municipioRepository;
+        this.jwtUtils = jwtUtils;
     }
 
     public ApiResponse obtenerPerfil(String nombreUsuario) {
@@ -45,6 +59,72 @@ public class PerfilService {
             return new ApiResponse(false, "Usuario no encontrado");
         }
         return new ApiResponse(true, "Perfil obtenido correctamente", toPerfilResponse(usuarioOpt.get()));
+    }
+
+    @Transactional
+    public ApiResponse actualizarMiPerfil(String nombreUsuarioAuth, PerfilUpdateRequest req) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.buscarIdPorNombre(nombreUsuarioAuth)
+                .map(o -> ((Number) o).intValue())
+                .flatMap(usuarioRepository::findById);
+        if (usuarioOpt.isEmpty()) {
+            return new ApiResponse(false, "Usuario no encontrado");
+        }
+        Usuario u = usuarioOpt.get();
+        if (!"activo".equalsIgnoreCase(u.getEstado())) {
+            return new ApiResponse(false, "Cuenta no activa");
+        }
+
+        String nuevoNombre = req.getNombreUsuario().trim();
+        String nuevoCorreo = req.getCorreo().trim();
+        if (!esMayorDeEdad(req.getFechaNacimiento())) {
+            return new ApiResponse(false, "Debes ser mayor de edad");
+        }
+
+        if (!u.getNombreUsuario().equals(nuevoNombre)) {
+            Optional<Object> otroNombre = usuarioRepository.buscarIdPorNombre(nuevoNombre);
+            if (otroNombre.isPresent() && ((Number) otroNombre.get()).intValue() != u.getIdUsuario()) {
+                return new ApiResponse(false, "El nombre de usuario ya está en uso");
+            }
+        }
+        if (!u.getCorreo().equals(nuevoCorreo)) {
+            Optional<Object> otroCorreo = usuarioRepository.buscarIdPorCorreo(nuevoCorreo);
+            if (otroCorreo.isPresent() && ((Number) otroCorreo.get()).intValue() != u.getIdUsuario()) {
+                return new ApiResponse(false, "El correo ya está registrado");
+            }
+        }
+
+        int idMunicipioActual = u.getMunicipio() != null ? u.getMunicipio().getIdMunicipio() : -1;
+        Optional<Municipios> munOpt = municipioRepository.findById(req.getIdMunicipio());
+        if (munOpt.isEmpty()) {
+            return new ApiResponse(false, "El municipio seleccionado no existe");
+        }
+        Municipios municipio = munOpt.get();
+        if (req.getIdMunicipio() != idMunicipioActual && !"Activo".equals(municipio.getEstado())) {
+            return new ApiResponse(false, "El municipio seleccionado no está disponible");
+        }
+
+        boolean requiereNuevoToken = !u.getNombreUsuario().equals(nuevoNombre)
+                || idMunicipioActual != req.getIdMunicipio();
+
+        u.setNombreUsuario(nuevoNombre);
+        u.setCorreo(nuevoCorreo);
+        u.setFechaNacimiento(req.getFechaNacimiento());
+        u.setMunicipio(municipio);
+        usuarioRepository.save(u);
+
+        PerfilResponse perfil = toPerfilResponse(u);
+        String token = requiereNuevoToken
+                ? jwtUtils.generateToken(u.getNombreUsuario(), u.getTipo(), u.getMunicipio().getIdMunicipio())
+                : null;
+        return new ApiResponse(true, "Perfil actualizado correctamente",
+                new PerfilActualizadoResponse(perfil, token));
+    }
+
+    private boolean esMayorDeEdad(java.util.Date fechaNacimiento) {
+        LocalDate nacimiento = fechaNacimiento.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        return Period.between(nacimiento, LocalDate.now()).getYears() >= 18;
     }
 
     @Transactional
