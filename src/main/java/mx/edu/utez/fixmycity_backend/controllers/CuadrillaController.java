@@ -3,12 +3,14 @@ package mx.edu.utez.fixmycity_backend.controllers;
 import mx.edu.utez.fixmycity_backend.dto.request.AsignacionReporteRequest;
 import mx.edu.utez.fixmycity_backend.dto.request.CuadrillaRequest;
 import mx.edu.utez.fixmycity_backend.dto.request.FinalizarReporteRequest;
+import mx.edu.utez.fixmycity_backend.dto.request.SquadLeaveRequest;
 import mx.edu.utez.fixmycity_backend.dto.request.VotacionRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.security.AuthenticationHelper;
 import mx.edu.utez.fixmycity_backend.services.AsignacionService;
 import mx.edu.utez.fixmycity_backend.services.CuadrillaService;
 import mx.edu.utez.fixmycity_backend.services.SquadVolunteerService;
+import mx.edu.utez.fixmycity_backend.services.VolunteerResignService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,15 +25,18 @@ public class CuadrillaController {
     private final CuadrillaService cuadrillaService;
     private final AsignacionService asignacionService;
     private final SquadVolunteerService squadVolunteerService;
+    private final VolunteerResignService volunteerResignService;
     private final AuthenticationHelper auth;
 
     public CuadrillaController(CuadrillaService cuadrillaService,
                               AsignacionService asignacionService,
                               SquadVolunteerService squadVolunteerService,
+                              VolunteerResignService volunteerResignService,
                               AuthenticationHelper auth) {
         this.cuadrillaService = cuadrillaService;
         this.asignacionService = asignacionService;
         this.squadVolunteerService = squadVolunteerService;
+        this.volunteerResignService = volunteerResignService;
         this.auth = auth;
     }
 
@@ -87,6 +92,27 @@ public class CuadrillaController {
         if (idUsuario == -1) return unauthorized();
         ApiResponse r = squadVolunteerService.obtenerReporteCuadrilla(idReporte, idUsuario);
         return ResponseEntity.status(r.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(r);
+    }
+
+    /**
+     * Baja del voluntariado y/o de una cuadrilla activa. Respuesta: {@code PerfilActualizadoResponse} (perfil + JWT nuevo).
+     * Cuerpo opcional: {@code { "idCuadrilla": N }} si hay varias cuadrillas activas.
+     */
+    @PostMapping("/api/squads/leave")
+    public ResponseEntity<ApiResponse> salirDeCuadrillaVoluntariado(
+            @RequestBody(required = false) SquadLeaveRequest body) {
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
+        String nombre = auth.getAuthenticatedUsername();
+        if (nombre == null) return unauthorized();
+        ApiResponse r = volunteerResignService.salir(body, idUsuario, nombre);
+        if (r.isSuccess()) {
+            return ResponseEntity.ok(r);
+        }
+        if (r.getMessage() != null && r.getMessage().contains("reportes asignados")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(r);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
     }
 
     /** Cuadrilla del voluntario autenticado y sus miembros (Mi equipo). */

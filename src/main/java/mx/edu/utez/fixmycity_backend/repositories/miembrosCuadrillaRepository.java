@@ -13,6 +13,8 @@ public interface miembrosCuadrillaRepository extends JpaRepository<miembrosCuadr
 
     List<miembrosCuadrilla> findByVoluntario_IdVoluntario(int idVoluntario);
 
+    List<miembrosCuadrilla> findByCuadrilla_IdCuadrillaOrderByNumeroVoluntarioAsc(int idCuadrilla);
+
     //Modulo 3.1 - Listar todos los miembros de una cuadrilla
     @Query(value = "SELECT mc.numeroVoluntario, mc.idCuadrilla, mc.idMiembro, mc.tipo " +
             "FROM miembrosCuadrilla mc " +
