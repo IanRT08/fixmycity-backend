@@ -14,6 +14,13 @@ import java.util.Optional;
 @Repository
 public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
 
+    /** Cuadrillas donde el voluntario indicado es el líder (idLider). */
+    @Query(value = "SELECT c.idCuadrilla " +
+            "FROM cuadrilla c " +
+            "WHERE c.idLider = :idVoluntario",
+            nativeQuery = true)
+    List<Object> findIdsByIdLiderVoluntario(@Param("idVoluntario") int idVoluntario);
+
     //Modulo 3.1 - Verificar si ya existe una cuadrilla con ese nombre
     @Query(value = "SELECT c.idCuadrilla " +
             "FROM cuadrilla c " +
@@ -49,6 +56,14 @@ public interface CuadrillaRepository extends JpaRepository<Cuadrilla, Integer> {
             "AND c.idMunicipio = :idMunicipio",
             nativeQuery = true)
     List<Object> findIdsByEstadoAndMunicipio(@Param("estado") String estado, @Param("idMunicipio") int idMunicipio);
+
+    // Todas las cuadrillas sin filtro de estado (superadmin - ver activas e inactivas)
+    @Query(value = "SELECT c.idCuadrilla FROM cuadrilla c", nativeQuery = true)
+    List<Object> findAllIds();
+
+    // Todas las cuadrillas de un municipio sin filtro de estado (admin - ver activas e inactivas)
+    @Query(value = "SELECT c.idCuadrilla FROM cuadrilla c WHERE c.idMunicipio = :idMunicipio", nativeQuery = true)
+    List<Object> findAllIdsByMunicipio(@Param("idMunicipio") int idMunicipio);
 
     //Dashboard - Conteo de cuadrillas libres (activas sin reporte en proceso) por municipio
     @Query(value = "SELECT COUNT(c.idCuadrilla) " +

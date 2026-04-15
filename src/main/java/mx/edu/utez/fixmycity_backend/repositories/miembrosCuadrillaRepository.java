@@ -2,6 +2,7 @@ package mx.edu.utez.fixmycity_backend.repositories;
 
 import mx.edu.utez.fixmycity_backend.modelos.miembrosCuadrilla;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,10 @@ import java.util.List;
 
 @Repository
 public interface miembrosCuadrillaRepository extends JpaRepository<miembrosCuadrilla, Integer> {
+
+    List<miembrosCuadrilla> findByVoluntario_IdVoluntario(int idVoluntario);
+
+    List<miembrosCuadrilla> findByCuadrilla_IdCuadrillaOrderByNumeroVoluntarioAsc(int idCuadrilla);
 
     //Modulo 3.1 - Listar todos los miembros de una cuadrilla
     @Query(value = "SELECT mc.numeroVoluntario, mc.idCuadrilla, mc.idMiembro, mc.tipo " +
@@ -27,6 +32,11 @@ public interface miembrosCuadrillaRepository extends JpaRepository<miembrosCuadr
             "WHERE mc.idCuadrilla = :idCuadrilla",
             nativeQuery = true)
     int countByCuadrilla(@Param("idCuadrilla") int idCuadrilla);
+
+    //Modulo 3.1 - Eliminar todos los miembros de una cuadrilla (para edición de integrantes)
+    @Modifying
+    @Query(value = "DELETE FROM miembrosCuadrilla WHERE idCuadrilla = :idCuadrilla", nativeQuery = true)
+    void deleteAllByCuadrilla(@Param("idCuadrilla") int idCuadrilla);
 
     //Modulo 3.3 - Verificar si un voluntario pertenece a la cuadrilla asignada al reporte
     @Query(value = "SELECT mc.numeroVoluntario, mc.idCuadrilla, mc.idMiembro, mc.tipo " +

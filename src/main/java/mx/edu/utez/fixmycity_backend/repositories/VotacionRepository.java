@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Optional;
 
 @Repository
@@ -43,4 +46,20 @@ public interface VotacionRepository extends JpaRepository<Votacion, Integer> {
             "AND v.idVoluntario = c.idLider",
             nativeQuery = true)
     Optional<Votacion> findLiderVoteByReporte(@Param("idReporte") int idReporte);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Votacion v WHERE v.idVoluntario.idVoluntario = :idVoluntario AND v.idCuadrilla.idCuadrilla = :idCuadrilla")
+    void deleteByVoluntarioAndCuadrilla(@Param("idVoluntario") int idVoluntario, @Param("idCuadrilla") int idCuadrilla);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Votacion v WHERE v.idVoluntario.idVoluntario = :idVoluntario")
+    void deleteByVoluntario(@Param("idVoluntario") int idVoluntario);
+
+    /** Elimina todos los votos de un reporte al reasignarlo, para permitir nueva votación. */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Votacion v WHERE v.idReporte.idReporte = :idReporte")
+    void deleteByReporte(@Param("idReporte") int idReporte);
 }

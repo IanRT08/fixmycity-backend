@@ -14,6 +14,8 @@ public class PerfilResponse {
     private String estado;
     /** Base64 de la imagen, o null si no hay foto (admins u opcional). */
     private String fotoPerfilBase64;
+    private boolean esLiderDeCuadrilla;
+    private Integer idCuadrilla;
 
     public PerfilResponse() {
     }
@@ -102,5 +104,21 @@ public class PerfilResponse {
 
     public void setFotoPerfilBase64(String fotoPerfilBase64) {
         this.fotoPerfilBase64 = fotoPerfilBase64;
+    }
+
+    public boolean isEsLiderDeCuadrilla() {
+        return esLiderDeCuadrilla;
+    }
+
+    public void setEsLiderDeCuadrilla(boolean esLiderDeCuadrilla) {
+        this.esLiderDeCuadrilla = esLiderDeCuadrilla;
+    }
+
+    public Integer getIdCuadrilla() {
+        return idCuadrilla;
+    }
+
+    public void setIdCuadrilla(Integer idCuadrilla) {
+        this.idCuadrilla = idCuadrilla;
     }
 }

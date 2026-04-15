@@ -34,4 +34,23 @@ public interface VoluntarioRepository extends JpaRepository<Voluntario, Integer>
             "   AND c.estado = 'activa')",
             nativeQuery = true)
     List<Object> findAvailableIdsByMunicipio(@Param("idMunicipio") int idMunicipio);
+
+    //Modulo 3.1 - Listar voluntarios disponibles para editar una cuadrilla (incluye miembros actuales)
+    @Query(value = "SELECT v.idVoluntario " +
+            "FROM voluntario v " +
+            "INNER JOIN usuario u ON v.idUsuario = u.idUsuario " +
+            "WHERE u.idMunicipio = :idMunicipio " +
+            "AND u.estado = 'activo' " +
+            "AND (NOT EXISTS (" +
+            "   SELECT 1 FROM miembrosCuadrilla mc " +
+            "   INNER JOIN cuadrilla c ON mc.idCuadrilla = c.idCuadrilla " +
+            "   WHERE mc.idMiembro = v.idVoluntario " +
+            "   AND c.estado = 'activa') " +
+            "OR EXISTS (" +
+            "   SELECT 1 FROM miembrosCuadrilla mc2 " +
+            "   WHERE mc2.idMiembro = v.idVoluntario " +
+            "   AND mc2.idCuadrilla = :idCuadrilla))",
+            nativeQuery = true)
+    List<Object> findAvailableIdsByMunicipioForEdit(@Param("idMunicipio") int idMunicipio,
+                                                    @Param("idCuadrilla") int idCuadrilla);
 }

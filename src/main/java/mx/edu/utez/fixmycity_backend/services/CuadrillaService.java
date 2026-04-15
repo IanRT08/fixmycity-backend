@@ -20,6 +20,8 @@ public class CuadrillaService {
     @Autowired private VoluntarioRepository voluntarioRepository;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private MunicipioRepository municipioRepository;
+    @Autowired private reporteAsignadoCuadrillaRepository reporteAsignadoCuadrillaRepository;
+    @Autowired private detallesReporteRepository detallesReporteRepository;
 
     @Transactional
     public ApiResponse crearCuadrilla(CuadrillaRequest request) {
@@ -61,12 +63,14 @@ public class CuadrillaService {
         Usuario admin = adminOpt.get();
 
         List<Object> ids;
+        boolean todas = "todas".equalsIgnoreCase(estado);
         if (admin.getTipo().equals("superadmin")) {
-            ids = cuadrillaRepository.findIdsByEstado(estado);
+            ids = todas ? cuadrillaRepository.findAllIds() : cuadrillaRepository.findIdsByEstado(estado);
         } else {
             if (admin.getMunicipio() == null)
                 return new ApiResponse(false, "No se pudo obtener el municipio del administrador");
-            ids = cuadrillaRepository.findIdsByEstadoAndMunicipio(estado, admin.getMunicipio().getIdMunicipio());
+            int idMun = admin.getMunicipio().getIdMunicipio();
+            ids = todas ? cuadrillaRepository.findAllIdsByMunicipio(idMun) : cuadrillaRepository.findIdsByEstadoAndMunicipio(estado, idMun);
         }
 
         List<CuadrillaResponse> response = ids.stream()
@@ -78,16 +82,28 @@ public class CuadrillaService {
                     List<String> nombres = miembros.stream()
                             .map(m -> m.getVoluntario().getUsuario().getNombreUsuario())
                             .collect(Collectors.toList());
-                    return new CuadrillaResponse(
+                    CuadrillaResponse cr = new CuadrillaResponse(
                             c.getIdCuadrilla(), c.getNombreCuadrilla(),
+                            c.getIdMunicipio().getIdMunicipio(),
                             c.getIdMunicipio().getNombre(),
                             c.getVoluntario().getUsuario().getNombreUsuario(),
                             c.getEstado(), nombres);
+                    List<reporteAsignadoCuadrilla> activos = reporteAsignadoCuadrillaRepository.findActiveByCuadrilla(c.getIdCuadrilla());
+                    if (!activos.isEmpty()) {
+                        reporteAsignadoCuadrilla rac = activos.get(0);
+                        int idRep = rac.getIdReporte().getIdReporte();
+                        cr.setReporteActualId(idRep);
+                        cr.setReporteActualTitulo(rac.getIdReporte().getTitulo());
+                        detallesReporteRepository.findByReporte(idRep)
+                                .ifPresent(d -> cr.setReporteActualEstado(d.getEstado()));
+                    }
+                    return cr;
                 }).collect(Collectors.toList());
 
         return new ApiResponse(true, "Cuadrillas obtenidas correctamente", response);
     }
 
+@Transactional(readOnly = true)
     // Returns list of {idUsuario, nombreUsuario} for voluntarios without active squad
     public ApiResponse listarVoluntariosDisponibles(int idMunicipio) {
         List<Object> ids = voluntarioRepository.findAvailableIdsByMunicipio(idMunicipio);
@@ -103,6 +119,53 @@ public class CuadrillaService {
                     return m;
                 }).collect(Collectors.toList());
         return new ApiResponse(true, "Voluntarios disponibles obtenidos correctamente", result);
+    }
+
+    @Transactional
+    public ApiResponse editarMiembrosCuadrilla(int idCuadrilla, CuadrillaRequest request) {
+        Optional<Cuadrilla> cuadrillaOpt = cuadrillaRepository.findById(idCuadrilla);
+        if (cuadrillaOpt.isEmpty()) return new ApiResponse(false, "Cuadrilla no encontrada");
+        if (request.getIdMiembros().size() != 5)
+            return new ApiResponse(false, "Deben ser exactamente 5 integrantes");
+        if (!request.getIdMiembros().contains(request.getIdLider()))
+            return new ApiResponse(false, "El líder debe ser uno de los 5 integrantes");
+        for (Integer idVol : request.getIdMiembros()) {
+            if (voluntarioRepository.findById(idVol).isEmpty())
+                return new ApiResponse(false, "El voluntario con id " + idVol + " no existe");
+        }
+        Optional<Voluntario> liderOpt = voluntarioRepository.findById(request.getIdLider());
+        if (liderOpt.isEmpty()) return new ApiResponse(false, "El líder seleccionado no es válido");
+
+        Cuadrilla cuadrilla = cuadrillaOpt.get();
+        miembrosCuadrillaRepository.deleteAllByCuadrilla(idCuadrilla);
+        cuadrilla.setVoluntario(liderOpt.get());
+        cuadrillaRepository.save(cuadrilla);
+        for (Integer idVol : request.getIdMiembros()) {
+            Voluntario voluntario = voluntarioRepository.findById(idVol).get();
+            miembrosCuadrilla miembro = new miembrosCuadrilla();
+            miembro.setCuadrilla(cuadrilla);
+            miembro.setVoluntario(voluntario);
+            miembro.setTipo(idVol.equals(request.getIdLider()) ? "lider" : "voluntario");
+            miembrosCuadrillaRepository.save(miembro);
+        }
+        return new ApiResponse(true, "Integrantes de cuadrilla actualizados correctamente");
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse listarVoluntariosParaEdicion(int idMunicipio, int idCuadrilla) {
+        List<Object> ids = voluntarioRepository.findAvailableIdsByMunicipioForEdit(idMunicipio, idCuadrilla);
+        List<Map<String, Object>> result = ids.stream()
+                .map(o -> ((Number) o).intValue())
+                .map(id -> voluntarioRepository.findById(id).orElse(null))
+                .filter(Objects::nonNull)
+                .map(v -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("idUsuario", v.getIdVoluntario());
+                    m.put("nombreUsuario", v.getUsuario().getNombreUsuario());
+                    m.put("tipo", "voluntario");
+                    return m;
+                }).collect(Collectors.toList());
+        return new ApiResponse(true, "Voluntarios obtenidos correctamente", result);
     }
 
     @Transactional

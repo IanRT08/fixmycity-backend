@@ -72,6 +72,10 @@ public class AsignacionService {
             return new ApiResponse(false, "La cuadrilla seleccionada no está disponible");
         }
 
+        // Limpiar votos y asignación previa si el reporte fue rechazado y está siendo reasignado
+        votacionRepository.deleteByReporte(request.getIdReporte());
+        asignacionRepository.deleteByReporte(request.getIdReporte());
+
         reporteAsignadoCuadrilla asignacion = new reporteAsignadoCuadrilla();
         asignacion.setIdReporte(reporteOpt.get());
         asignacion.setIdCuadrilla(cuadrillaOpt.get());

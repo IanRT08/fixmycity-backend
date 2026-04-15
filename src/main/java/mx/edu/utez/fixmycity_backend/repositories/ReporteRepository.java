@@ -140,4 +140,66 @@ public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
     int countByEstadoAndFecha(@Param("estado") String estado,
                               @Param("fechaInicio") String fechaInicio,
                               @Param("fechaFin") String fechaFin);
+
+    /** Reportes asignados a cuadrillas donde el voluntario es miembro (filtrarActivo=1: Asignado/En camino/En curso). */
+    @Query(value =
+            "SELECT COUNT(*) FROM (" +
+            "  SELECT DISTINCT r.idReporte " +
+            "  FROM reporte r " +
+            "  INNER JOIN reporteAsignadoCuadrilla rac ON r.idReporte = rac.idReporte " +
+            "  INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "  INNER JOIN miembrosCuadrilla mc ON rac.idCuadrilla = mc.idCuadrilla " +
+            "  WHERE mc.idMiembro = :idVoluntario " +
+            "  AND (rac.idCuadrilla = :idCuadrilla OR :idCuadrilla <= 0) " +
+            "  AND ((:filtrarActivo = 1 AND dr.estado IN ('Asignado', 'En camino', 'En curso')) " +
+            "       OR (:filtrarActivo = 0 AND dr.estado = :estadoExacto)) " +
+            ")",
+            nativeQuery = true)
+    long countSquadAssignments(
+            @Param("idVoluntario") int idVoluntario,
+            @Param("idCuadrilla") int idCuadrilla,
+            @Param("filtrarActivo") int filtrarActivo,
+            @Param("estadoExacto") String estadoExacto);
+
+    @Query(value =
+            "SELECT idReporte FROM (" +
+            "  SELECT DISTINCT r.idReporte AS idReporte, dr.fechaRegistro AS fr " +
+            "  FROM reporte r " +
+            "  INNER JOIN reporteAsignadoCuadrilla rac ON r.idReporte = rac.idReporte " +
+            "  INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "  INNER JOIN miembrosCuadrilla mc ON rac.idCuadrilla = mc.idCuadrilla " +
+            "  WHERE mc.idMiembro = :idVoluntario " +
+            "  AND (rac.idCuadrilla = :idCuadrilla OR :idCuadrilla <= 0) " +
+            "  AND ((:filtrarActivo = 1 AND dr.estado IN ('Asignado', 'En camino', 'En curso')) " +
+            "       OR (:filtrarActivo = 0 AND dr.estado = :estadoExacto)) " +
+            "  ORDER BY fr DESC NULLS LAST " +
+            ") subq OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY",
+            nativeQuery = true)
+    List<Object> findSquadAssignmentIdsPaged(
+            @Param("idVoluntario") int idVoluntario,
+            @Param("idCuadrilla") int idCuadrilla,
+            @Param("filtrarActivo") int filtrarActivo,
+            @Param("estadoExacto") String estadoExacto,
+            @Param("offset") int offset,
+            @Param("limit") int limit);
+
+    @Query(value =
+            "SELECT idReporte FROM (" +
+            "  SELECT DISTINCT r.idReporte AS idReporte, dr.fechaRegistro AS fr " +
+            "  FROM reporte r " +
+            "  INNER JOIN reporteAsignadoCuadrilla rac ON r.idReporte = rac.idReporte " +
+            "  INNER JOIN detallesReporte dr ON r.idReporte = dr.idReporte " +
+            "  INNER JOIN miembrosCuadrilla mc ON rac.idCuadrilla = mc.idCuadrilla " +
+            "  WHERE mc.idMiembro = :idVoluntario " +
+            "  AND (rac.idCuadrilla = :idCuadrilla OR :idCuadrilla <= 0) " +
+            "  AND ((:filtrarActivo = 1 AND dr.estado IN ('Asignado', 'En camino', 'En curso')) " +
+            "       OR (:filtrarActivo = 0 AND dr.estado = :estadoExacto)) " +
+            "  ORDER BY fr DESC NULLS LAST " +
+            ") subq",
+            nativeQuery = true)
+    List<Object> findSquadAssignmentIdsUnpaged(
+            @Param("idVoluntario") int idVoluntario,
+            @Param("idCuadrilla") int idCuadrilla,
+            @Param("filtrarActivo") int filtrarActivo,
+            @Param("estadoExacto") String estadoExacto);
 }

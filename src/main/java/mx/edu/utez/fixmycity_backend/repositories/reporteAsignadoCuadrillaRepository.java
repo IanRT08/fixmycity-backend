@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -28,4 +31,10 @@ public interface reporteAsignadoCuadrillaRepository extends JpaRepository<report
             "AND dr.estado IN ('Asignado', 'En camino', 'En curso')",
             nativeQuery = true)
     List<reporteAsignadoCuadrilla> findActiveByCuadrilla(@Param("idCuadrilla") int idCuadrilla);
+
+    /** Elimina la asignación previa de un reporte (usado al reasignar). */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM reporteAsignadoCuadrilla r WHERE r.idReporte.idReporte = :idReporte")
+    void deleteByReporte(@Param("idReporte") int idReporte);
 }

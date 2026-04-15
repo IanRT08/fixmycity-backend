@@ -1,5 +1,7 @@
 package mx.edu.utez.fixmycity_backend.controllers;
 
+import jakarta.validation.Valid;
+import mx.edu.utez.fixmycity_backend.dto.request.PerfilUpdateRequest;
 import mx.edu.utez.fixmycity_backend.dto.response.ApiResponse;
 import mx.edu.utez.fixmycity_backend.security.AuthenticationHelper;
 import mx.edu.utez.fixmycity_backend.services.PerfilService;
@@ -28,6 +30,14 @@ public class PerfilController {
         if (nombre == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "No autenticado"));
         ApiResponse r = perfilService.obtenerPerfil(nombre);
         return ResponseEntity.status(r.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(r);
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse> actualizarPerfil(@RequestBody @Valid PerfilUpdateRequest request) {
+        String nombre = auth.getAuthenticatedUsername();
+        if (nombre == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "No autenticado"));
+        ApiResponse r = perfilService.actualizarPerfil(nombre, request);
+        return ResponseEntity.status(r.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(r);
     }
 
     @PutMapping(value = "/me/photo", consumes = "multipart/form-data")
