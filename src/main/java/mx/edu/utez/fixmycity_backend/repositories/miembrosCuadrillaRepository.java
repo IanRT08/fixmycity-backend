@@ -38,6 +38,14 @@ public interface miembrosCuadrillaRepository extends JpaRepository<miembrosCuadr
     @Query(value = "DELETE FROM miembrosCuadrilla WHERE idCuadrilla = :idCuadrilla", nativeQuery = true)
     void deleteAllByCuadrilla(@Param("idCuadrilla") int idCuadrilla);
 
+    /** Devuelve todos los miembros de la cuadrilla asignada al reporte indicado. */
+    @Query(value = "SELECT mc.numeroVoluntario, mc.idCuadrilla, mc.idMiembro, mc.tipo " +
+            "FROM miembrosCuadrilla mc " +
+            "INNER JOIN reporteAsignadoCuadrilla rac ON mc.idCuadrilla = rac.idCuadrilla " +
+            "WHERE rac.idReporte = :idReporte",
+            nativeQuery = true)
+    List<miembrosCuadrilla> findAllByReporte(@Param("idReporte") int idReporte);
+
     //Modulo 3.3 - Verificar si un voluntario pertenece a la cuadrilla asignada al reporte
     @Query(value = "SELECT mc.numeroVoluntario, mc.idCuadrilla, mc.idMiembro, mc.tipo " +
             "FROM miembrosCuadrilla mc " +

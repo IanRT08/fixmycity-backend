@@ -10,6 +10,7 @@ import mx.edu.utez.fixmycity_backend.modelos.miembrosCuadrilla;
 import mx.edu.utez.fixmycity_backend.repositories.CuadrillaRepository;
 import mx.edu.utez.fixmycity_backend.repositories.ReporteRepository;
 import mx.edu.utez.fixmycity_backend.repositories.VoluntarioRepository;
+import mx.edu.utez.fixmycity_backend.repositories.VotacionRepository;
 import mx.edu.utez.fixmycity_backend.repositories.miembrosCuadrillaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,17 +36,20 @@ public class SquadVolunteerService {
     private final ReporteRepository reporteRepository;
     private final CuadrillaRepository cuadrillaRepository;
     private final ReporteService reporteService;
+    private final VotacionRepository votacionRepository;
 
     public SquadVolunteerService(VoluntarioRepository voluntarioRepository,
                                  miembrosCuadrillaRepository miembrosCuadrillaRepository,
                                  ReporteRepository reporteRepository,
                                  CuadrillaRepository cuadrillaRepository,
-                                 ReporteService reporteService) {
+                                 ReporteService reporteService,
+                                 VotacionRepository votacionRepository) {
         this.voluntarioRepository = voluntarioRepository;
         this.miembrosCuadrillaRepository = miembrosCuadrillaRepository;
         this.reporteRepository = reporteRepository;
         this.cuadrillaRepository = cuadrillaRepository;
         this.reporteService = reporteService;
+        this.votacionRepository = votacionRepository;
     }
 
     /**
@@ -110,14 +114,43 @@ public class SquadVolunteerService {
         if (idVolOpt.isEmpty()) {
             return new ApiResponse(false, "No eres voluntario");
         }
-        if (miembrosCuadrillaRepository.findByReporteAndVoluntario(idReporte, idVolOpt.get()).isEmpty()) {
+        int idVoluntario = idVolOpt.get();
+        if (miembrosCuadrillaRepository.findByReporteAndVoluntario(idReporte, idVoluntario).isEmpty()) {
             return new ApiResponse(false, "No tienes permiso para ver este reporte");
         }
         Optional<ReporteResponse> body = reporteService.construirDetalleReporteConFotos(idReporte);
         if (body.isEmpty()) {
             return new ApiResponse(false, "Reporte no encontrado");
         }
-        return new ApiResponse(true, "Reporte obtenido correctamente", body.get());
+        ReporteResponse reporte = body.get();
+        boolean yaVoto = votacionRepository.findByReporteAndVoluntario(idReporte, idVoluntario).isPresent();
+        reporte.setYaVote(yaVoto);
+        return new ApiResponse(true, "Reporte obtenido correctamente", reporte);
+    }
+
+    /** Miembros de la cuadrilla asignada al reporte, con su estado de voto ("aceptar") para dicho reporte. */
+    @Transactional(readOnly = true)
+    public ApiResponse obtenerMiembrosConVotos(int idReporte, int idUsuario) {
+        Optional<Integer> idVolOpt = idVoluntarioDeUsuario(idUsuario);
+        if (idVolOpt.isEmpty()) {
+            return new ApiResponse(false, "No eres voluntario");
+        }
+        int idVoluntario = idVolOpt.get();
+        if (miembrosCuadrillaRepository.findByReporteAndVoluntario(idReporte, idVoluntario).isEmpty()) {
+            return new ApiResponse(false, "No tienes permiso para ver este reporte");
+        }
+        List<miembrosCuadrilla> todos = miembrosCuadrillaRepository.findAllByReporte(idReporte);
+        List<SquadMiembroResponse> lista = todos.stream().map(m -> {
+            int idVol = m.getVoluntario().getIdVoluntario();
+            boolean yaVoto = votacionRepository.findByReporteAndVoluntario(idReporte, idVol).isPresent();
+            SquadMiembroResponse r = new SquadMiembroResponse(
+                    m.getVoluntario().getUsuario().getIdUsuario(),
+                    m.getVoluntario().getUsuario().getNombreUsuario(),
+                    m.getTipo());
+            r.setYaVoto(yaVoto);
+            return r;
+        }).collect(Collectors.toList());
+        return new ApiResponse(true, "Miembros obtenidos correctamente", lista);
     }
 
     /** Primera cuadrilla en la que el voluntario figura como miembro + listado de miembros. */

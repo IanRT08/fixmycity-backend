@@ -14,6 +14,10 @@ public class CuadrillaResponse {
     private Integer reporteActualId;
     private String reporteActualTitulo;
     private String reporteActualEstado;
+    private Integer reporteFinalizadoId;
+    private String reporteFinalizadoTitulo;
+    private String reporteFinalizadoComentario;
+    private String reporteFinalizadoFotoBase64;
 
     public CuadrillaResponse(int idCuadrilla, String nombreCuadrilla, int idMunicipio, String municipio,
                              String lider, String estado, List<String> miembros) {
@@ -94,5 +98,33 @@ public class CuadrillaResponse {
     }
     public void setReporteActualEstado(String reporteActualEstado) {
         this.reporteActualEstado = reporteActualEstado;
+    }
+
+    public Integer getReporteFinalizadoId() {
+        return reporteFinalizadoId;
+    }
+    public void setReporteFinalizadoId(Integer reporteFinalizadoId) {
+        this.reporteFinalizadoId = reporteFinalizadoId;
+    }
+
+    public String getReporteFinalizadoTitulo() {
+        return reporteFinalizadoTitulo;
+    }
+    public void setReporteFinalizadoTitulo(String reporteFinalizadoTitulo) {
+        this.reporteFinalizadoTitulo = reporteFinalizadoTitulo;
+    }
+
+    public String getReporteFinalizadoComentario() {
+        return reporteFinalizadoComentario;
+    }
+    public void setReporteFinalizadoComentario(String reporteFinalizadoComentario) {
+        this.reporteFinalizadoComentario = reporteFinalizadoComentario;
+    }
+
+    public String getReporteFinalizadoFotoBase64() {
+        return reporteFinalizadoFotoBase64;
+    }
+    public void setReporteFinalizadoFotoBase64(String reporteFinalizadoFotoBase64) {
+        this.reporteFinalizadoFotoBase64 = reporteFinalizadoFotoBase64;
     }
 }

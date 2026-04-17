@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.Base64;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +23,7 @@ public class CuadrillaService {
     @Autowired private MunicipioRepository municipioRepository;
     @Autowired private reporteAsignadoCuadrillaRepository reporteAsignadoCuadrillaRepository;
     @Autowired private detallesReporteRepository detallesReporteRepository;
+    @Autowired private reporteFinalizadoRepository reporteFinalizadoRepository;
 
     @Transactional
     public ApiResponse crearCuadrilla(CuadrillaRequest request) {
@@ -97,6 +99,14 @@ public class CuadrillaService {
                         detallesReporteRepository.findByReporte(idRep)
                                 .ifPresent(d -> cr.setReporteActualEstado(d.getEstado()));
                     }
+                    reporteFinalizadoRepository.findLastByCuadrilla(c.getIdCuadrilla()).ifPresent(rf -> {
+                        cr.setReporteFinalizadoId(rf.getIdReporte().getIdReporte());
+                        cr.setReporteFinalizadoTitulo(rf.getIdReporte().getTitulo());
+                        cr.setReporteFinalizadoComentario(rf.getComentarios());
+                        if (rf.getFotoEvidencia() != null) {
+                            cr.setReporteFinalizadoFotoBase64(Base64.getEncoder().encodeToString(rf.getFotoEvidencia()));
+                        }
+                    });
                     return cr;
                 }).collect(Collectors.toList());
 

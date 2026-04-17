@@ -15,6 +15,7 @@ public class ReporteResponse {
     // El nombreUsuario se muestra solo como alias por privacidad (requerimiento legal DFR)
     private String nombreUsuario;
     private List<String> fotos;
+    private Boolean yaVote;
 
     public ReporteResponse(int idReporte, String titulo, String descripcion,
                            String estado, String municipio, Date fechaRegistro,
@@ -89,5 +90,12 @@ public class ReporteResponse {
     }
     public void setFotos(List<String> fotos) {
         this.fotos = fotos;
+    }
+
+    public Boolean getYaVote() {
+        return yaVote;
+    }
+    public void setYaVote(Boolean yaVote) {
+        this.yaVote = yaVote;
     }
 }

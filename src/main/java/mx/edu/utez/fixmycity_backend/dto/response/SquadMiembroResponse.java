@@ -9,6 +9,8 @@ public class SquadMiembroResponse {
     private String nombreUsuario;
     /** Valores típicos: {@code lider}, {@code voluntario} (columna miembrosCuadrilla.tipo). */
     private String rolEnCuadrilla;
+    /** true si el miembro ya votó "aceptar" para el reporte consultado; null cuando no aplica. */
+    private Boolean yaVoto;
 
     public SquadMiembroResponse() {
     }
@@ -41,5 +43,13 @@ public class SquadMiembroResponse {
 
     public void setRolEnCuadrilla(String rolEnCuadrilla) {
         this.rolEnCuadrilla = rolEnCuadrilla;
+    }
+
+    public Boolean getYaVoto() {
+        return yaVoto;
+    }
+
+    public void setYaVoto(Boolean yaVoto) {
+        this.yaVoto = yaVoto;
     }
 }

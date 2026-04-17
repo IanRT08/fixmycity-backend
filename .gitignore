@@ -38,3 +38,4 @@ application-local.properties
 
 ### Sensitive Files ###
 src/main/resources/Wallet_FIXMYCITY/
+src/main/resources/firebase-adminsdk.json

@@ -126,6 +126,15 @@ public class CuadrillaController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
     }
 
+    /** Miembros de la cuadrilla asignada al reporte con su estado de voto (aceptar). */
+    @GetMapping("/api/squads/reports/{idReporte}/miembros")
+    public ResponseEntity<ApiResponse> miembrosConVotos(@PathVariable int idReporte) {
+        int idUsuario = auth.getAuthenticatedUserId();
+        if (idUsuario == -1) return unauthorized();
+        ApiResponse r = squadVolunteerService.obtenerMiembrosConVotos(idReporte, idUsuario);
+        return ResponseEntity.status(r.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(r);
+    }
+
     /** Cuadrilla del voluntario autenticado y sus miembros (Mi equipo). */
     @GetMapping("/api/squads/me")
     public ResponseEntity<ApiResponse> miCuadrilla() {

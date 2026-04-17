@@ -19,4 +19,13 @@ public interface reporteFinalizadoRepository extends JpaRepository<reporteFinali
             "WHERE rf.idReporte = :idReporte",
             nativeQuery = true)
     Optional<reporteFinalizado> findByReporte(@Param("idReporte") int idReporte);
+
+    // Obtener el último reporte finalizado de una cuadrilla
+    @Query(value = "SELECT rf.idReporte, rf.fotoEvidencia, rf.comentarios, " +
+            "rf.idCuadrillaEncargada, rf.fechaFinalizacion " +
+            "FROM reporteFinalizado rf " +
+            "WHERE rf.idCuadrillaEncargada = :idCuadrilla " +
+            "ORDER BY rf.fechaFinalizacion DESC FETCH FIRST 1 ROWS ONLY",
+            nativeQuery = true)
+    Optional<reporteFinalizado> findLastByCuadrilla(@Param("idCuadrilla") int idCuadrilla);
 }
